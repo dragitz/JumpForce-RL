@@ -1,6 +1,8 @@
 import pymem
 import time
 
+from helper_functions import *
+
 # This changes everytime, make sure you put the right address
 AddressList = 0x00007FF700040000
 
@@ -96,14 +98,14 @@ def getGameStatus():
 
 
 
-# Read pointer at base, then follow offsets
 while True:
 
     InGame, Flows, StartAllowed, StartAllowed2, Paused, Paused2 = getGameStatus()
     #print(getGameStatus())
 
     # Simple system check to know if the game is ready to start (aka agent can fight)
-    if InGame < 100 or StartAllowed == 0 or StartAllowed2 == 0 or Paused == 1: # or Flows < 100
+    if InGame < 100 or Flows < 100 or StartAllowed == 0 or StartAllowed2 == 0 or Paused == 1:
+        print("Waiting for bot game to start... (ensure bot is fighting/moving)")
         time.sleep(1)
         continue
 
