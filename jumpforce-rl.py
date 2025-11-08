@@ -23,7 +23,7 @@ class PlayerStatus:
         
         self.hp                     = pm.read_float(PLY_PTR + 0x28)
         self.hp_max                 = pm.read_float(PLY_PTR + 0x2c)
-        #self.hp_percent             = self.hp / self.hp_max
+        self.hp_percent             = self.hp / self.hp_max
         self.charge                 = pm.read_float(PLY_PTR + 0x30)
         self.charge_max             = pm.read_float(PLY_PTR + 0x34)
         self.stamina                = pm.read_float(PLY_PTR + 0x38)
@@ -96,10 +96,6 @@ def getGameStatus():
 
 
 
- 
-
-
-
 # Read pointer at base, then follow offsets
 while True:
 
@@ -111,10 +107,16 @@ while True:
         time.sleep(1)
         continue
 
-    Player = PlayerStatus(2)
+    # Get player's state (p1 will be our main agent)
+    MY_STATUS = PlayerStatus(1)
+    RIVAL_STATUS = PlayerStatus(2)
 
-    print(Player.hp)
 
-    #ACTION_PTR = 
-    #print(ACTION_PTR)
-    time.sleep(0.150)
+    P1_CONTROLLER_PTR = pm.read_longlong(AddressList + 0x30)
+    print(P1_CONTROLLER_PTR)
+    pm.write_int(P1_CONTROLLER_PTR, 65)
+
+    
+    time.sleep(2.150)
+    pm.write_int(P1_CONTROLLER_PTR, 12345)
+    time.sleep(4.150)
