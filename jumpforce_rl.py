@@ -12,6 +12,8 @@ pm = pymem.Pymem("JUMP_FORCE-Win64-Shipping.exe")
 class PlayerStatus:
     def __init__(self, player_id=1):
 
+        self.id = player_id
+
         PLY_PTR = pm.read_longlong(AddressList + 0x20)
         PLY_PTR = pm.read_longlong(PLY_PTR)
         
@@ -43,28 +45,30 @@ class PlayerStatus:
         self.isFullAwakenON     = pm.read_int(PLY_PTR + 0xC8)
         self.isGod              = pm.read_int(PLY_PTR + 0xDC)
         
-        self.PLAYER_ACTION, self.PLAYER_ACTION_PREVIOUS, self.PLAYER_RAW_ACTION, self.PLAYER_RAW_ACTION_PREVIOUS = self.getAction(player_id)
+        self.PLAYER_ACTION, self.PLAYER_ACTION_PREVIOUS, self.PLAYER_RAW_ACTION, self.PLAYER_RAW_ACTION_PREVIOUS = self.getAction()
 
         COORD_PTR = pm.read_longlong(AddressList + 0x40)
-        if player_id == 2:
+        if self.id == 2:
             COORD_PTR = pm.read_longlong(AddressList + 0x48)
         
         self.x = pm.read_float(COORD_PTR + 0x0)
         self.y = pm.read_float(COORD_PTR + 0x4)
         self.z = pm.read_float(COORD_PTR + 0x8)
 
+        self.sendInput(12345) # reset input
+
     # Function to retrieve the action of a given player
     # Raw action ids are the true id of the action, while non-raw are a "summary"
     # Eg. RAW: 41, 42 and 43 is a sequence of attacks that gets summaized into "10" meaning "Attacking"
     # "_PREVIOUS" will store the previous frame's action, given a potential delay, this would give hints on a previous state
-    def getAction(self, player_id=1):
+    def getAction(self):
         
         PLAYER_ACTION = 0
         PLAYER_ACTION_PREVIOUS = 0
         PLAYER_RAW_ACTION = 0
         PLAYER_RAW_ACTION_PREVIOUS = 0
         
-        if player_id == 1:
+        if self.id == 1:
             ACTION_PTR = pm.read_longlong(AddressList + 0x10)
             
             PLAYER_ACTION = pm.read_int(ACTION_PTR + 0x00)
@@ -72,7 +76,7 @@ class PlayerStatus:
             PLAYER_RAW_ACTION = pm.read_int(ACTION_PTR + 0x10)
             PLAYER_RAW_ACTION_PREVIOUS = pm.read_int(ACTION_PTR + 0x1C)
         
-        elif player_id == 2:
+        elif self.id == 2:
             ACTION_PTR = pm.read_longlong(AddressList + 0x18)
             
             PLAYER_ACTION = pm.read_int(ACTION_PTR + 0x00)
@@ -80,11 +84,12 @@ class PlayerStatus:
             PLAYER_RAW_ACTION = pm.read_int(ACTION_PTR + 0x10)
             PLAYER_RAW_ACTION_PREVIOUS = pm.read_int(ACTION_PTR + 0x1C)
         
+        
         return PLAYER_ACTION, PLAYER_ACTION_PREVIOUS, PLAYER_RAW_ACTION, PLAYER_RAW_ACTION_PREVIOUS
 
     # Function that return variables about the game, wether or not some calculations can be performed.
     # Both InGame and Flows must be set to 100 in order to allow inputs
-    def getGameStatus(self):
+    def getGameStatus():
         STAT_PTR = pm.read_longlong(AddressList + 0x8)
 
         InGame = pm.read_int(STAT_PTR + 0x00)
@@ -97,10 +102,10 @@ class PlayerStatus:
 
         return InGame, Flows, StartAllowed, StartAllowed2, Paused, Paused2
 
-    def sendInput(self, player_id=1, input=12345):
+    def sendInput(self, input=12345):
 
         CONTROLLER_PTR = pm.read_longlong(AddressList + 0x30)
-        if player_id == 2:
+        if self.id == 2:
             CONTROLLER_PTR = pm.read_longlong(AddressList + 0x38)
         
         pm.write_int(CONTROLLER_PTR, input)
