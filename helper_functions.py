@@ -1,0 +1,2 @@
+def canGuardBreak():
+    pass

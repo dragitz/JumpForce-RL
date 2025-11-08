@@ -45,10 +45,14 @@ class PlayerStatus:
         self.isGod              = pm.read_int(PLY_PTR + 0xDC)
         
         self.PLAYER_ACTION, self.PLAYER_ACTION_PREVIOUS, self.PLAYER_RAW_ACTION, self.PLAYER_RAW_ACTION_PREVIOUS = self.getAction(player_id)
+
+        COORD_PTR = pm.read_longlong(AddressList + 0x40)
+        if player_id == 2:
+            COORD_PTR = pm.read_longlong(AddressList + 0x48)
         
-        self.x = 0
-        self.y = 0
-        self.z = 0
+        self.x = pm.read_float(COORD_PTR + 0x0)
+        self.y = pm.read_float(COORD_PTR + 0x4)
+        self.z = pm.read_float(COORD_PTR + 0x8)
 
     # Function to retrieve the action of a given player
     # Raw action ids are the true id of the action, while non-raw are a "summary"
@@ -104,16 +108,20 @@ while True:
     #print(getGameStatus())
 
     # Simple system check to know if the game is ready to start (aka agent can fight)
-    if InGame < 100 or Flows < 100 or StartAllowed == 0 or StartAllowed2 == 0 or Paused == 1:
+    if InGame < 100  or StartAllowed == 0 or StartAllowed2 == 0 or Paused == 1: #or Flows < 100
         print("Waiting for bot game to start... (ensure bot is fighting/moving)")
         time.sleep(1)
         continue
-
+    
+    continue
     # Get player's state (p1 will be our main agent)
     MY_STATUS = PlayerStatus(1)
     RIVAL_STATUS = PlayerStatus(2)
+    print(MY_STATUS.x)
+    time.sleep(0.1)
+    continue
 
-
+    # test input, charge at interval
     P1_CONTROLLER_PTR = pm.read_longlong(AddressList + 0x30)
     print(P1_CONTROLLER_PTR)
     pm.write_int(P1_CONTROLLER_PTR, 65)
