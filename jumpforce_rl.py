@@ -1,7 +1,6 @@
 import pymem
-import time
 
-from helper_functions import *
+#from helper_functions import *
 
 # This changes everytime, make sure you put the right address
 AddressList = 0x00007FF700040000

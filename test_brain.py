@@ -1,4 +1,7 @@
+from helper_functions import *
 from jumpforce_rl import *
+import time
+
 
 while True:
 
@@ -12,10 +15,15 @@ while True:
         continue
     
     # Get player stats
-    Player = PlayerStatus(1)
+    my_state = PlayerStatus(1)
+    rival_state = PlayerStatus(2)
+    
+    #my_state.sendInput(player_id=1, input=65)
+
+    print( math.floor(getDistance(my_state, rival_state)) )
+    #print(my_state.x)
     
     # test input, charge at interval
-    Player.sendInput(1, 65)
-    time.sleep(2.150)
-    Player.sendInput(1, 12345)
-    time.sleep(4.150)
+    time.sleep(0.150)
+    #my_state.sendInput(player_id=1, input=12345)
+    
