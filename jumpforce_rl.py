@@ -83,50 +83,29 @@ class PlayerStatus:
         
         return PLAYER_ACTION, PLAYER_ACTION_PREVIOUS, PLAYER_RAW_ACTION, PLAYER_RAW_ACTION_PREVIOUS
 
+    # Function that return variables about the game, wether or not some calculations can be performed.
+    # Both InGame and Flows must be set to 100 in order to allow inputs
+    def getGameStatus(self):
+        STAT_PTR = pm.read_longlong(AddressList + 0x8)
+
+        InGame = pm.read_int(STAT_PTR + 0x00)
+        Flows = pm.read_int(STAT_PTR + 0x04)
+        StartAllowed = pm.read_int(STAT_PTR + 0x8)
+        StartAllowed2 = pm.read_int(STAT_PTR + 0xC)
+
+        Paused = pm.read_int(STAT_PTR + 0x10)
+        Paused2 = pm.read_int(STAT_PTR + 0x14)
+
+        return InGame, Flows, StartAllowed, StartAllowed2, Paused, Paused2
+
+    def sendInput(self, player_id=1, input=12345):
+
+        CONTROLLER_PTR = pm.read_longlong(AddressList + 0x30)
+        if player_id == 2:
+            CONTROLLER_PTR = pm.read_longlong(AddressList + 0x38)
+        
+        pm.write_int(CONTROLLER_PTR, input)
+
+        
 
 
-# Function that return variables about the game, wether or not some calculations can be performed.
-# Both InGame and Flows must be set to 100 in order to allow inputs
-def getGameStatus():
-    STAT_PTR = pm.read_longlong(AddressList + 0x8)
-
-    InGame = pm.read_int(STAT_PTR + 0x00)
-    Flows = pm.read_int(STAT_PTR + 0x04)
-    StartAllowed = pm.read_int(STAT_PTR + 0x8)
-    StartAllowed2 = pm.read_int(STAT_PTR + 0xC)
-
-    Paused = pm.read_int(STAT_PTR + 0x10)
-    Paused2 = pm.read_int(STAT_PTR + 0x14)
-
-    return InGame, Flows, StartAllowed, StartAllowed2, Paused, Paused2
-
-
-
-while True:
-
-    InGame, Flows, StartAllowed, StartAllowed2, Paused, Paused2 = getGameStatus()
-    #print(getGameStatus())
-
-    # Simple system check to know if the game is ready to start (aka agent can fight)
-    if InGame < 100  or StartAllowed == 0 or StartAllowed2 == 0 or Paused == 1: #or Flows < 100
-        print("Waiting for bot game to start... (ensure bot is fighting/moving)")
-        time.sleep(1)
-        continue
-    
-    continue
-    # Get player's state (p1 will be our main agent)
-    MY_STATUS = PlayerStatus(1)
-    RIVAL_STATUS = PlayerStatus(2)
-    print(MY_STATUS.x)
-    time.sleep(0.1)
-    continue
-
-    # test input, charge at interval
-    P1_CONTROLLER_PTR = pm.read_longlong(AddressList + 0x30)
-    print(P1_CONTROLLER_PTR)
-    pm.write_int(P1_CONTROLLER_PTR, 65)
-
-    
-    time.sleep(2.150)
-    pm.write_int(P1_CONTROLLER_PTR, 12345)
-    time.sleep(4.150)
