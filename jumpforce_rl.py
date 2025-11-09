@@ -3,7 +3,7 @@ import pymem
 #from helper_functions import *
 
 # This changes everytime, make sure you put the right address
-AddressList = 0x00007FF700040000
+AddressList = 0x00007FF7F34B0000
 
 
 pm = pymem.Pymem("JUMP_FORCE-Win64-Shipping.exe")
@@ -23,27 +23,26 @@ class PlayerStatus:
 
         self.current_character_id   = pm.read_int(PLY_PTR + 0x94)
         self.next_character_id      = pm.read_int(PLY_PTR + 0x98)
-        
         self.hp                     = pm.read_float(PLY_PTR + 0x28)
         self.hp_max                 = pm.read_float(PLY_PTR + 0x2c)
-        self.hp_percent             = self.hp / self.hp_max
-        self.charge                 = pm.read_float(PLY_PTR + 0x30)
-        self.charge_max             = pm.read_float(PLY_PTR + 0x34)
-        self.stamina                = pm.read_float(PLY_PTR + 0x38)
-        self.stamina_max            = pm.read_float(PLY_PTR + 0x3C)
-        self.awakening              = pm.read_float(PLY_PTR + 0x40)
-        self.awakening_max          = pm.read_float(PLY_PTR + 0x44)
-        self.awakening_percent      = pm.read_float(PLY_PTR + 0x80)
-        self.time_till_recovery     = pm.read_float(PLY_PTR + 0x54)
-        self.tiredness              = pm.read_float(PLY_PTR + 0x5c)
+        self.hp_percent             = self.hp / self.hp_max  # not normalized
+        self.charge                 = pm.read_float(PLY_PTR + 0x30) # from 0 to 5000
+        self.charge_max             = pm.read_float(PLY_PTR + 0x34) # constant 5000
+        self.stamina                = pm.read_float(PLY_PTR + 0x38) # from 0 to 10000
+        self.stamina_max            = pm.read_float(PLY_PTR + 0x3C) # constant 10000
+        self.awakening              = pm.read_float(PLY_PTR + 0x40) # from 0 to 10000
+        self.awakening_max          = pm.read_float(PLY_PTR + 0x44) # constant 10000
+        self.awakening_percent      = pm.read_float(PLY_PTR + 0x80) # from 0.0 to 1.0
+        self.time_till_recovery     = pm.read_float(PLY_PTR + 0x54) # float value never bigger than 2.0 (usually around 0.5)
+        self.tiredness              = pm.read_float(PLY_PTR + 0x5c) # big float value (from 0 to  8500 and above) limit not yet observed
         
-        self.charge_level           = pm.read_float(PLY_PTR + 0x78)
-        self.combo                  = pm.read_float(PLY_PTR + 0x88)
-        self.dmg_dealt              = pm.read_float(PLY_PTR + 0x8C)
+        self.charge_level           = pm.read_float(PLY_PTR + 0x78) # Visual from 0.0 to 5.0
+        self.combo                  = pm.read_int(PLY_PTR + 0x88)   # integer usually from 0 to 200, has no limit
+        self.dmg_dealt              = pm.read_float(PLY_PTR + 0x8C) # float usually from 0 to 20000, has no limit
         
-        self.isHalfAwakenON     = pm.read_int(PLY_PTR + 0xC4)
-        self.isFullAwakenON     = pm.read_int(PLY_PTR + 0xC8)
-        self.isGod              = pm.read_int(PLY_PTR + 0xDC)
+        self.isHalfAwakenON     = pm.read_int(PLY_PTR + 0xC4) # 0 or 1
+        self.isFullAwakenON     = pm.read_int(PLY_PTR + 0xC8) # 0 or 1
+        self.isGod              = pm.read_int(PLY_PTR + 0xDC) # 0 or 1 - can't be hit
         
         self.PLAYER_ACTION, self.PLAYER_ACTION_PREVIOUS, self.PLAYER_RAW_ACTION, self.PLAYER_RAW_ACTION_PREVIOUS = self.getAction()
 
