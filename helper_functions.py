@@ -15,4 +15,20 @@ def canGuardBreak(my_state:PlayerStatus, rival_state:PlayerStatus):
         return True
 
     return False
-    
+
+def getDeltas(my_state:PlayerStatus, rival_state:PlayerStatus, Frame):
+
+    # Delta stats
+    Distance = getDistance(my_state, rival_state)
+    DeltaDistance = round(Distance - Frame["Dist"], 3)
+    Frame["Dist"] = Distance
+
+    Charge = my_state.charge
+    DeltaCharge = round(Charge - Frame["Charge"], 3)
+    Frame["Charge"] = Charge
+
+    Stamina = my_state.stamina
+    DeltaStamina = round(Stamina - Frame["Stamina"], 3)
+    Frame["Stamina"] = Stamina
+
+    return DeltaDistance, DeltaCharge, DeltaStamina

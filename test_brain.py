@@ -12,6 +12,7 @@ Frame = {
 }
 
 
+
 while True:
 
     time.sleep(0.05)
@@ -29,20 +30,9 @@ while True:
     my_state = PlayerStatus(1)
     rival_state = PlayerStatus(2)
 
-    # Delta stats
-    Distance = getDistance(my_state, rival_state)
-    DeltaDistance = round(Distance - Frame["Dist"], 3)
-    Frame["Dist"] = Distance
+    print(getDeltas(my_state, rival_state, Frame))
 
-    Charge = my_state.charge
-    DeltaCharge = round(Charge - Frame["Charge"], 3)
-    Frame["Charge"] = Charge
-
-    Stamina = my_state.stamina
-    DeltaStamina = round(Stamina - Frame["Stamina"], 3)
-    Frame["Stamina"] = Stamina
-
-    print(DeltaStamina)
+    
     
     #my_state.sendInput(player_id=1, input=65)
     #if canGuardBreak(my_state, rival_state):
