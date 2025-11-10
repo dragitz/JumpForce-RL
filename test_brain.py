@@ -7,7 +7,7 @@ import numpy as np
 
 # Configurable settings
 MAX_MATCH_TIME      = 99
-BRAIN_REACTION_TIME_MS = 50 / 1000
+BRAIN_REACTION_TIME_MS = 0.1 / 1000
 
 
 # How long the agent can hold information about a state + its associated reward
@@ -22,13 +22,14 @@ INPUTS = (PLAYER_INPUT_FRAMES * 2 + GLOBAL_INPUTS) * MEMORY_SIZE_MAX
 
 # Setup and fill memory with zeroes
 MEMORY = {}
+print("memory setting up..")
 for frame in range(MEMORY_SIZE_MAX):
     MEMORY[frame] = {
         0: [0.0] * PLAYER_INPUT_FRAMES,
         1: [0.0] * PLAYER_INPUT_FRAMES,
         2: [0.0] * GLOBAL_INPUTS
     }
-
+print("memory ready!")
 # Current game stats
 TIME_PASSED = 0
 
@@ -81,8 +82,45 @@ def saveMemory(my_state:PlayerStatus, rival_state:PlayerStatus):
 # Function analyzes tracked stats during the duration of the game
 def analize():
     
+    """
+        Cause of death
+        Track how many times a raw action has been seen
+    """
+    tracked_raw1 = {}
+    tracked_raw2 = {}
+    for frame in MEMORY.values():
+        raw1 = frame[0][10]
+        
+        if frame[1][0] == 0 and frame[1][1] == 0:
+            continue
+
+        raw2 = frame[1][10]
+        raw3 = frame[1][11]
+
+        if raw1 not in tracked_raw1:
+            tracked_raw1[raw1] = 1
+        else:
+            tracked_raw1[raw1] += 1
+
+        if raw2 not in tracked_raw2:
+            tracked_raw2[raw2] = 1
+        else:
+            tracked_raw2[raw2] += 1
+
+        if raw3 not in tracked_raw2:
+            tracked_raw2[raw3] = 1
+        else:
+            tracked_raw2[raw3] += 1
+
     
-    pass
+    print("---------------")
+    for key in tracked_raw2.keys():
+        print(f"{key}: {tracked_raw2[key]}")
+    print("---------------")
+    
+
+
+
 
 TOTAL_GAMES = 0
 MY_WINS = 0
@@ -114,7 +152,12 @@ while True:
         elif rival_state.hp_percent < my_state.hp_percent:
             rival_state.killPlayer()
             game_ended = True
-    
+    elif my_state.hp_percent <= 0:
+        game_ended = True
+    elif rival_state.hp_percent <= 0:
+        game_ended = True
+
+
     saveMemory(my_state, rival_state)
 
     if game_ended:
@@ -128,6 +171,9 @@ while True:
 
         analize()
         TIME_PASSED = 0
+        game_ended = False
+        
+        time.sleep(2)
 
     #print(f"mem size: {len(MEMORY)}")
     #print(len(MEMORY["0"]))
