@@ -22,23 +22,27 @@ class ActionType(Enum):
     HighSpDodge = 14
     HighSpCounterAttack = 15
     HighSpCombatEscape = 16
+
     #  Getting damaged
     GettingHit = 20
     GuardBroke = 21
     VulnerableFramePerfect = 22
     VulnerableSecondFrame = 23
     Thrown = 24
+
     #  Defensive
     Guarding = 30
     GuardDodge = 31
     Awakening = 32
     SuccessfulGuard = 33
     OnGround = 34
+
     #  After ground
     GroundAttack = 100
     GroundMove = 101
     GroundJump = 102
     Ground = 103
+    
     #  Jumping combos
     JumpLightAttack = 120
     JumpLightAttackCharged = 121

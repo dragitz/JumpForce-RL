@@ -5,17 +5,29 @@ import math
 import numpy as np
 
 
+# Configurable settings
+MAX_MATCH_TIME      = 99
+BRAIN_REACTION_TIME_MS = 50 / 1000
 
-BRAIN_REACTION_TIME = 0.01
 
 # How long the agent can hold information about a state + its associated reward
 # Lower reaction times will lead to bigger memory sizes
-MEMORY_SECONDS    = 10
-MEMORY_SIZE_MAX   = int(MEMORY_SECONDS / BRAIN_REACTION_TIME)
+MEMORY_SECONDS    = MAX_MATCH_TIME
+MEMORY_SIZE_MAX   = int(MEMORY_SECONDS / BRAIN_REACTION_TIME_MS)
 
-# Fill memory with zeroes
+# Each frame contains 13 inputs for each player, plus 2 global ones, then it's multiplied by the total frames in memory
+PLAYER_INPUT_FRAMES = 13
+GLOBAL_INPUTS = 2
+INPUTS = (PLAYER_INPUT_FRAMES * 2 + GLOBAL_INPUTS) * MEMORY_SIZE_MAX
+
+# Setup and fill memory with zeroes
 MEMORY = {}
-
+for frame in range(MEMORY_SIZE_MAX):
+    MEMORY[frame] = {
+        0: [0.0] * PLAYER_INPUT_FRAMES,
+        1: [0.0] * PLAYER_INPUT_FRAMES,
+        2: [0.0] * GLOBAL_INPUTS
+    }
 
 # Current game stats
 TIME_PASSED = 0
@@ -40,12 +52,12 @@ def getSimpleReward(action):
 
 def saveMemory(my_state:PlayerStatus, rival_state:PlayerStatus):
     mem_size = len(MEMORY)
-
+    
     if mem_size >= MEMORY_SIZE_MAX:
         # remove oldest key
         oldest_key = next(iter(MEMORY))
         del MEMORY[oldest_key]
-
+    
     new_key = max(MEMORY.keys(), default=-1) + 1
     
     MEMORY[new_key] = {
@@ -66,18 +78,16 @@ def saveMemory(my_state:PlayerStatus, rival_state:PlayerStatus):
         2: [TIME_PASSED, round(getDistance(my_state, rival_state), 2)]
     }
 
-def computeAvgScore():
-    global MEMORY
-    score1 = 0
-    score2 = 0
-    for frame in MEMORY.values():
-        score1 += frame[2][-1]
+# Function analyzes tracked stats during the duration of the game
+def analize():
     
-    return round(score1 / len(MEMORY), 1)
-        
     
+    pass
 
-    
+TOTAL_GAMES = 0
+MY_WINS = 0
+RIVAL_WINS = 0
+game_ended = False
 
 while True:
 
@@ -89,15 +99,36 @@ while True:
         continue
 
     # Time tracker
-    TIME_PASSED += BRAIN_REACTION_TIME
-    time.sleep(BRAIN_REACTION_TIME)
+    TIME_PASSED += BRAIN_REACTION_TIME_MS
+    time.sleep(BRAIN_REACTION_TIME_MS)
     
-
     # Get player stats
     my_state = PlayerStatus(1)
     rival_state = PlayerStatus(2)
 
+    # Force match end (if equal will wait till either has lower hp)
+    if TIME_PASSED >= MAX_MATCH_TIME:
+        if my_state.hp_percent < rival_state.hp_percent:
+            my_state.killPlayer()
+            game_ended = True
+        elif rival_state.hp_percent < my_state.hp_percent:
+            rival_state.killPlayer()
+            game_ended = True
+    
     saveMemory(my_state, rival_state)
+
+    if game_ended:
+        
+        # Stats
+        TOTAL_GAMES += 1
+        if rival_state.hp_percent <= 0:
+            MY_WINS += 1
+        else:
+            RIVAL_WINS += 1
+
+        analize()
+        TIME_PASSED = 0
+
     #print(f"mem size: {len(MEMORY)}")
     #print(len(MEMORY["0"]))
-    print(computeAvgScore())
+    
