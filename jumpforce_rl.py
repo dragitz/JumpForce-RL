@@ -28,8 +28,10 @@ class PlayerStatus:
         self.hp_percent             = self.hp / self.hp_max  # not normalized
         self.charge                 = pm.read_float(PLY_PTR + 0x30) # from 0 to 5000
         self.charge_max             = pm.read_float(PLY_PTR + 0x34) # constant 5000
+        self.charge_percent         = self.charge / self.charge_max
         self.stamina                = pm.read_float(PLY_PTR + 0x38) # from 0 to 10000
         self.stamina_max            = pm.read_float(PLY_PTR + 0x3C) # constant 10000
+        self.stamina_percent         = self.stamina / self.stamina_max
         self.awakening              = pm.read_float(PLY_PTR + 0x40) # from 0 to 10000
         self.awakening_max          = pm.read_float(PLY_PTR + 0x44) # constant 10000
         self.awakening_percent      = pm.read_float(PLY_PTR + 0x80) # from 0.0 to 1.0
@@ -54,7 +56,7 @@ class PlayerStatus:
         self.y = pm.read_float(COORD_PTR + 0x4)
         self.z = pm.read_float(COORD_PTR + 0x8)
 
-        self.sendInput(12345) # reset input
+        #self.sendInput(12345) # reset input
 
     # Function to retrieve the action of a given player
     # Raw action ids are the true id of the action, while non-raw are a "summary"
@@ -120,6 +122,7 @@ class PlayerStatus:
         if self.id == 2:
             CONTROLLER_PTR = pm.read_longlong(AddressList + 0x38)
         
+        #print(f"Player {self.id} Controller PTR: {hex(CONTROLLER_PTR)}")
         pm.write_int(CONTROLLER_PTR, input)
 
         
