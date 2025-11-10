@@ -1,5 +1,6 @@
 from enum import Enum
 
+# 34 states
 class ActionType(Enum):
     #  General
     Nothing = 0

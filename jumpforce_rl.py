@@ -100,6 +100,19 @@ class PlayerStatus:
         Paused2 = pm.read_int(STAT_PTR + 0x14)
 
         return InGame, Flows, StartAllowed, StartAllowed2, Paused, Paused2
+    
+    def killPlayer(self):
+        
+        PLY_PTR = pm.read_longlong(AddressList + 0x20)
+        PLY_PTR = pm.read_longlong(PLY_PTR)
+        
+        if self.id == 2:
+            PLY_PTR = pm.read_longlong(AddressList + 0x28)
+            PLY_PTR = pm.read_longlong(PLY_PTR)
+        
+        pm.write_float(PLY_PTR + 0x28, 0.0)
+        
+
 
     def sendInput(self, input=12345):
 
