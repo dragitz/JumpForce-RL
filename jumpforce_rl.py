@@ -3,7 +3,7 @@ import pymem
 #from helper_functions import *
 
 # This changes everytime, make sure you put the right address
-AddressList = 0x00007FF7F34B0000
+AddressList = 0x00007FF738F60000
 
 
 pm = pymem.Pymem("JUMP_FORCE-Win64-Shipping.exe")
@@ -56,7 +56,13 @@ class PlayerStatus:
         self.y = pm.read_float(COORD_PTR + 0x4)
         self.z = pm.read_float(COORD_PTR + 0x8)
 
-        #self.sendInput(12345) # reset input
+        VPAD_PTR = pm.read_longlong(AddressList + 0x50)
+        if self.id == 2:
+            VPAD_PTR = pm.read_longlong(AddressList + 0x58)
+        
+        self.vpad = pm.read_short(VPAD_PTR + 0x8)
+
+        
 
     # Function to retrieve the action of a given player
     # Raw action ids are the true id of the action, while non-raw are a "summary"

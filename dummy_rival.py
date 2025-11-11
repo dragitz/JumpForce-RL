@@ -4,14 +4,6 @@ import time
 import math
 import numpy as np
 
-# Frame diff
-Frame = {
-    "Dist": 0,
-    "Charge": 0,
-    "Stamina": 0
-}
-
-
 
 while True:
 
