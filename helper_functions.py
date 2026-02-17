@@ -16,19 +16,24 @@ def canGuardBreak(my_state:PlayerStatus, rival_state:PlayerStatus):
 
     return False
 
-def getDeltas(my_state:PlayerStatus, rival_state:PlayerStatus, Frame):
+def canAwaken(my_state:PlayerStatus, rival_state:PlayerStatus):
+    MY_ACTION = ActionType(my_state.PLAYER_ACTION)
+    RIVAL_ACTION = ActionType(rival_state.PLAYER_ACTION)
+    
+    if my_state.awakening_percent >= 0.5 and my_state.isHalfAwakenON == 0:
+        if MY_ACTION in [ActionType.Attacking, ActionType.SwappedCharacter, 
+                         ActionType.Follow, ActionType.Incoming, ActionType.Moving, ActionType.Nothing]:
+            return True
+    
+    return False
 
-    # Delta stats
-    Distance = getDistance(my_state, rival_state)
-    DeltaDistance = round(Distance - Frame["Dist"], 3)
-    Frame["Dist"] = Distance
+def canAttack(my_state:PlayerStatus, rival_state:PlayerStatus):
+    MY_ACTION = ActionType(my_state.PLAYER_ACTION)
+    RIVAL_ACTION = ActionType(rival_state.PLAYER_ACTION)
+    
+    dist = getDistance(my_state, rival_state)
 
-    Charge = my_state.charge
-    DeltaCharge = round(Charge - Frame["Charge"], 3)
-    Frame["Charge"] = Charge
-
-    Stamina = my_state.stamina
-    DeltaStamina = round(Stamina - Frame["Stamina"], 3)
-    Frame["Stamina"] = Stamina
-
-    return DeltaDistance, DeltaCharge, DeltaStamina
+    if dist > 15:
+        return False
+    
+    

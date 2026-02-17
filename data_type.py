@@ -1,5 +1,23 @@
 from enum import Enum
 
+class Vpad(Enum):
+    AWAKEN         = 0x8000
+    ESCAPE         = 0x4000
+    FOLLOW         = 0x2000
+    GUARD          = 0x1000
+    ULTIMATE       = 0x0800
+    SKILL_CIRCLE   = 0x0400
+    SKILL_TRIANGLE = 0x0200
+    SKILL_SQUARE   = 0x0100
+    SWAP           = 0x0080
+    CHARGE         = 0x0040
+    HEAVY          = 0x0020
+    LIGHT          = 0x0010
+    GRAB           = 0x0008
+    JUMP           = 0x0004
+    MOVE           = 0x0002
+    UNKNOWN        = 0x0001
+
 # 34 states
 class ActionType(Enum):
     #  General
@@ -48,3 +66,4 @@ class ActionType(Enum):
     JumpLightAttackCharged = 121
     JumpHeavyAttack = 122
     JumpHeavyAttackCharged = 123
+

@@ -1,25 +1,6 @@
 import pymem
 #from helper_functions import *
 
-"""
--- Controller inputs for sendInput()
-local AWAKEN         = 0x8000
-local ESCAPE         = 0x4000
-local FOLLOW         = 0x2000
-local GUARD          = 0x1000
-local ULTIMATE       = 0x0800
-local SKILL_CIRCLE   = 0x0400
-local SKILL_TRIANGLE = 0x0200
-local SKILL_SQUARE   = 0x0100
-local SWAP           = 0x0080
-local CHARGE         = 0x0040
-local HEAVY          = 0x0020
-local LIGHT          = 0x0010
-local GRAB           = 0x0008
-local JUMP           = 0x0004
-local MOVE           = 0x0002
-local UNKNOWN        = 0x0001
-"""
 
 
 
@@ -191,7 +172,7 @@ class PlayerStatus:
     def isGameOn():
         InGame, Flows, StartAllowed, StartAllowed2, Paused, Paused2, isBattleComplete, PauseTriggered, CombatTimer = PlayerStatus.getGameStatus()
 
-        if InGame < 50 or StartAllowed == 0 or StartAllowed2 == 0 or Paused == 1 or isBattleComplete == 1:
+        if InGame < 50 or StartAllowed == 0 or StartAllowed2 == 0 or Paused == 1 or isBattleComplete == 1 or CombatTimer == 0:
             return False
         
         return True
