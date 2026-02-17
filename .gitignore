@@ -2,3 +2,6 @@
 ppo_brain.py
 checkpoint.pth
 muzero_brain.py
+/replay
+/ignore
+/gru-ppo-bot
