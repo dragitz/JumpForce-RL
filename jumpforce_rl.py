@@ -94,13 +94,15 @@ class PlayerStatus:
         self.z = pm.read_float(COORD_PTR + 0x8)
 
         # virtual pad inputs (in game controller)
-        VPAD_PTR = pm.read_longlong(AddressList + 0x50)
+        VPAD_PTR = pm.read_longlong(pm.read_longlong(AddressList + 0x50))
         if self.id == 2:
-            VPAD_PTR = pm.read_longlong(AddressList + 0x58)
+            VPAD_PTR = pm.read_longlong(pm.read_longlong(AddressList + 0x58))
         
         self.vpad            = pm.read_short(VPAD_PTR + 0x8)
-        self.vpad_left_right = pm.read_float(VPAD_PTR + 0x10)
-        self.vpad_up_down    = pm.read_float(VPAD_PTR + 0x18)
+        self.vpad_left_right = pm.read_float(VPAD_PTR + 0x28)
+        self.vpad_up_down    = pm.read_float(VPAD_PTR + 0x2C)
+
+        #print(hex(VPAD_PTR))
 
         
 
@@ -149,7 +151,7 @@ class PlayerStatus:
             ACTION_PTR = pm.read_longlong(AddressList + 0xB8)
             PLAYER_ACTION_FRAME = pm.read_int(ACTION_PTR + 0x00)
         
-        print(PLAYER_ACTION_FRAME)
+        #print(PLAYER_ACTION_FRAME)
         return PLAYER_ACTION, PLAYER_ACTION_PREVIOUS, PLAYER_RAW_ACTION, PLAYER_RAW_ACTION_PREVIOUS, PLAYER_ACTION_FRAME
 
     # Function that return variables about the game, wether or not some calculations can be performed.

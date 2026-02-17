@@ -1,6 +1,6 @@
-from enum import Enum
+from enum import Enum, IntFlag
 
-class Vpad(Enum):
+class Vpad(IntFlag):
     AWAKEN         = 0x8000
     ESCAPE         = 0x4000
     FOLLOW         = 0x2000

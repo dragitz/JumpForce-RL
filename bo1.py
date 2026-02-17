@@ -28,6 +28,7 @@ while True:
     rival_state = PlayerStatus(2)
 
     input = 0
+    input = clearVpad(input, Vpad.MOVE)
 
     # Uses helper function to figure out when it can awaken
     if canAwaken(my_state, rival_state):
@@ -37,7 +38,7 @@ while True:
         input = setVpad(input, Vpad.LIGHT)
         input = setVpad(input, Vpad.HEAVY)
     
-    #my_state.sendInput(input)
+    my_state.sendInput(input, stick_x=1.0)
 
-    print(my_state.vpad_left_right)
+    #print(my_state.vpad_left_right)
     
