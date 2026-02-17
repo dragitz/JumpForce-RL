@@ -33,7 +33,7 @@ def canAttack(my_state:PlayerStatus, rival_state:PlayerStatus):
     
     dist = getDistance(my_state, rival_state)
 
-    if dist > 15:
+    if dist > 10.5:
         return False
     
     if RIVAL_ACTION in [ActionType.GettingHit, ActionType.BrokenGuard]:
@@ -55,3 +55,46 @@ def canChargeTp(my_state:PlayerStatus, rival_state:PlayerStatus):
         return True
     
     return False
+
+def canJumpHeavy(my_state:PlayerStatus, rival_state:PlayerStatus):
+    MY_ACTION = ActionType(my_state.PLAYER_ACTION)
+    MY_ACTION_PREVIOUS = ActionType(my_state.PLAYER_ACTION_PREVIOUS)
+    RIVAL_ACTION = ActionType(rival_state.PLAYER_ACTION)
+    RIVAL_ACTION_PREVIOUS = ActionType(rival_state.PLAYER_ACTION_PREVIOUS)
+
+    # Ensure enemy can be hit
+    if RIVAL_ACTION not in [ActionType.Nothing, ActionType.Moving, ActionType.Attacking, ActionType.Follow]:
+        return False
+
+    frame = my_state.PLAYER_ACTION_FRAME
+
+    if getDistance(my_state, rival_state) >= 6 or MY_ACTION != ActionType.Jumping or frame <= 20:
+        return False
+    
+    # Ensure enemy can be hit
+    if RIVAL_ACTION in [ActionType.Awakening, ActionType.UsingSkill]:
+        return False
+    
+    return True
+
+def canGrab(my_state:PlayerStatus, rival_state:PlayerStatus):
+    
+    MY_ACTION = ActionType(my_state.PLAYER_ACTION)
+    MY_ACTION_PREVIOUS = ActionType(my_state.PLAYER_ACTION_PREVIOUS)
+    RIVAL_ACTION = ActionType(rival_state.PLAYER_ACTION)
+    RIVAL_ACTION_PREVIOUS = ActionType(rival_state.PLAYER_ACTION_PREVIOUS)
+        
+    if getDistance(my_state, rival_state) >= 3.5: #4.01
+        return False
+
+    # Ensure I can grab
+    if MY_ACTION not in [ActionType.Nothing, ActionType.Moving, ActionType.Incoming]:
+        return False
+    
+    # Ensure enemy can be grabbed
+    if RIVAL_ACTION not in [ActionType.Nothing, ActionType.Moving, ActionType.UsingSkill, 
+                            ActionType.Attacking, ActionType.StandingUp, ActionType.GettingHit,
+                            ActionType.Guarding, ActionType.SuccessfulGuard]:
+        return False
+
+    return True
