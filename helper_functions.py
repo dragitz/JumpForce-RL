@@ -40,3 +40,18 @@ def canAttack(my_state:PlayerStatus, rival_state:PlayerStatus):
         return True
     
     return False
+
+def canChargeTp(my_state:PlayerStatus, rival_state:PlayerStatus):
+
+    MY_ACTION = ActionType(my_state.PLAYER_ACTION)
+    MY_ACTION_PREVIOUS = ActionType(my_state.PLAYER_ACTION_PREVIOUS)
+
+    frame = my_state.PLAYER_ACTION_FRAME
+
+    if getDistance(my_state, rival_state) >= 25:
+        return False
+
+    if MY_ACTION == ActionType.ChargedAttack and MY_ACTION_PREVIOUS == ActionType.ChargedAttack and frame >= 8 and frame < 10:
+        return True
+    
+    return False

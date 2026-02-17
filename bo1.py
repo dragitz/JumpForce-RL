@@ -27,8 +27,20 @@ while True:
     my_state = PlayerStatus(1)
     rival_state = PlayerStatus(2)
 
-    input = 0
-    input = clearVpad(input, Vpad.MOVE)
+    # Default, no hijacking
+    input = 12345
+
+    if canChargeTp(my_state, rival_state):
+        input = 0
+    
+    my_state.sendInput(input)
+    
+    print(getDistance(my_state, rival_state))
+
+
+"""    input = 0
+    input = setVpad(input, Vpad.CHARGE)
+    input = setVpad(input, Vpad.UNKNOWN)
 
     # Uses helper function to figure out when it can awaken
     if canAwaken(my_state, rival_state):
@@ -36,9 +48,8 @@ while True:
 
     if canAttack(my_state, rival_state):
         input = setVpad(input, Vpad.LIGHT)
-        input = setVpad(input, Vpad.HEAVY)
+        input = setVpad(input, Vpad.HEAVY)"""
     
-    my_state.sendInput(input, stick_x=1.0)
-
+    
     #print(my_state.vpad_left_right)
     
