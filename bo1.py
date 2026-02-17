@@ -36,19 +36,31 @@ while True:
     # Frame perfect quick tp after holding the attack button
     if canChargeTp(my_state, rival_state):
         input = 0
-    
-    
-    if canJumpHeavy(my_state, rival_state):
-        input = setVpad(input, Vpad.HEAVY)
+    """    
+        
+        if canJumpHeavy(my_state, rival_state):
+            input = setVpad(input, Vpad.HEAVY)
 
-    if canGrab(my_state, rival_state):
-        input = setVpad(input, Vpad.GRAB)
+        if canGrab(my_state, rival_state):
+            input = setVpad(input, Vpad.GRAB)
+    """
 
+    if canHighSpeedCounter(my_state, rival_state):
+        input = 0
+        input = setVpad(input, Vpad.LIGHT)
+
+        print(getDistance(my_state, rival_state), " - ", my_state.PLAYER_ACTION_FRAME, f"({my_state.PLAYER_ACTION},{my_state.PLAYER_ACTION_PREVIOUS})", rival_state.PLAYER_ACTION_FRAME)
+    
+    if canHighSpeedDodge(my_state, rival_state):
+        input = 0
+        input = setVpad(input, Vpad.GUARD)
+
+        #print(getDistance(my_state, rival_state), " - ", my_state.PLAYER_ACTION_FRAME, f"({my_state.PLAYER_ACTION},{my_state.PLAYER_ACTION_PREVIOUS})", rival_state.PLAYER_ACTION_FRAME)
 
     my_state.sendInput(input)
     
-    if rival_state.PLAYER_ACTION != 23 and my_state.PLAYER_ACTION != 23:
-        print(getDistance(my_state, rival_state))
+
+    
     #if my_state.PLAYER_ACTION != 122 and my_state.PLAYER_ACTION_PREVIOUS != 122:
     #    print(my_state.PLAYER_ACTION_FRAME)
 

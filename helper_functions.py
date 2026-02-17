@@ -83,8 +83,10 @@ def canGrab(my_state:PlayerStatus, rival_state:PlayerStatus):
     MY_ACTION_PREVIOUS = ActionType(my_state.PLAYER_ACTION_PREVIOUS)
     RIVAL_ACTION = ActionType(rival_state.PLAYER_ACTION)
     RIVAL_ACTION_PREVIOUS = ActionType(rival_state.PLAYER_ACTION_PREVIOUS)
-        
-    if getDistance(my_state, rival_state) >= 3.5: #4.01
+    
+    frame = rival_state.PLAYER_ACTION_FRAME
+
+    if getDistance(my_state, rival_state) >= 3.5: #4.01 3.5 is safer
         return False
 
     # Ensure I can grab
@@ -97,4 +99,65 @@ def canGrab(my_state:PlayerStatus, rival_state:PlayerStatus):
                             ActionType.Guarding, ActionType.SuccessfulGuard]:
         return False
 
+    # Edge case, when someone uses an ultimate, both players will get teleported really close
+    # which will return true, we force it to false (frame counter is a useful metric)
+    if RIVAL_ACTION == ActionType.UsingSkill and frame < 5:
+        return False
+    
     return True
+
+def canHighSpeedCounter(my_state:PlayerStatus, rival_state:PlayerStatus):
+    MY_ACTION = ActionType(my_state.PLAYER_ACTION)
+    MY_ACTION_PREVIOUS = ActionType(my_state.PLAYER_ACTION_PREVIOUS)
+    RIVAL_ACTION = ActionType(rival_state.PLAYER_ACTION)
+    RIVAL_ACTION_PREVIOUS = ActionType(rival_state.PLAYER_ACTION_PREVIOUS)
+    
+    my_frame = my_state.PLAYER_ACTION_FRAME
+    rival_frame = rival_state.PLAYER_ACTION_FRAME
+
+    dist = getDistance(my_state, rival_state)
+
+    if dist >= 10.0:
+        return False
+    
+    if RIVAL_ACTION != ActionType.HighSpCounterAttack:
+        return False
+    
+    if my_frame <= 10 or rival_frame <= 10:
+        return False
+    
+    if my_state.stamina_percent <= 0.05:
+        return False
+    
+    return True
+
+
+def canHighSpeedDodge(my_state:PlayerStatus, rival_state:PlayerStatus):
+    MY_ACTION = ActionType(my_state.PLAYER_ACTION)
+    MY_ACTION_PREVIOUS = ActionType(my_state.PLAYER_ACTION_PREVIOUS)
+    RIVAL_ACTION = ActionType(rival_state.PLAYER_ACTION)
+    RIVAL_ACTION_PREVIOUS = ActionType(rival_state.PLAYER_ACTION_PREVIOUS)
+    
+    my_frame = my_state.PLAYER_ACTION_FRAME
+    rival_frame = rival_state.PLAYER_ACTION_FRAME
+
+    dist = getDistance(my_state, rival_state)
+
+
+    if dist <= 0.60 or dist > 0.61:
+        return False
+    
+    if RIVAL_ACTION != ActionType.HighSpDodge or MY_ACTION == ActionType.Thrown:
+        return False
+    
+    # We can't use frames (bug?)
+    #if my_frame <= 10 or rival_frame <= 10:
+    #    return False
+    
+    # Enter stamina conserve mode
+    if my_state.stamina_percent <= 0.2:
+        return False
+    
+    return True
+
+
