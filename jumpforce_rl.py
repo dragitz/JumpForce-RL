@@ -114,6 +114,7 @@ class PlayerStatus:
         new_obj.__dict__ = self.__dict__.copy() 
         
         return new_obj
+    
     # Function to retrieve the action of a given player
     # Raw action ids are the true id of the action, while non-raw are a "summary"
     # Eg. RAW: 41, 42 and 43 is a sequence of attacks that gets summaized into "10" meaning "Attacking"

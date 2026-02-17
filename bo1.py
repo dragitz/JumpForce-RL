@@ -33,11 +33,11 @@ while True:
     if canAwaken(my_state, rival_state):
         input = setVpad(input, Vpad.AWAKEN)
 
-    input = Vpad.AWAKEN
-    if ActionType(rival_state.PLAYER_ACTION) in [ActionType.UsingSkill, ActionType.Attacking]:
-        input=4096
+    if canAttack(my_state, rival_state):
+        input = setVpad(input, Vpad.LIGHT)
+        input = setVpad(input, Vpad.HEAVY)
     
+    #my_state.sendInput(input)
 
-    
-    my_state.sendInput(input)
+    print(my_state.vpad_left_right)
     
