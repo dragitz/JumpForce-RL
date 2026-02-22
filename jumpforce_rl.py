@@ -168,13 +168,14 @@ class PlayerStatus:
         Paused2 = pm.read_int(STAT_PTR + 0x14)
         isBattleComplete = pm.read_int(STAT_PTR + 0x18)
         PauseTriggered = pm.read_int(STAT_PTR + 0x1C)
-        CombatTimer = pm.read_int(STAT_PTR + 0x20)
-
+        CombatTimer = pm.read_float(STAT_PTR + 0x20)
+        
         return InGame, Flows, StartAllowed, StartAllowed2, Paused, Paused2, isBattleComplete, PauseTriggered, CombatTimer
     
     def isGameOn():
         InGame, Flows, StartAllowed, StartAllowed2, Paused, Paused2, isBattleComplete, PauseTriggered, CombatTimer = PlayerStatus.getGameStatus()
 
+        #print(float(CombatTimer))
         if InGame < 50 or StartAllowed == 0 or StartAllowed2 == 0 or Paused == 1 or isBattleComplete == 1 or CombatTimer == 0:
             return False
         
@@ -223,5 +224,8 @@ class PlayerStatus:
             pm.write_float(CustomInput_PTR + 0x18, RequestedLeftRight)
             pm.write_float(CustomInput_PTR + 0x20, RequestedUpDown)
             
+    def sendXinput(self, btn=0):
 
-
+        #BUTTONS_PTR = pm.read_longlong(AddressList - 0xFBCC)
+        BUTTONS_PTR = pm.read_longlong(AddressList + 0x8)
+        pm.write_short(BUTTONS_PTR + 0x24, btn)

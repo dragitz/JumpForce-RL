@@ -57,7 +57,10 @@ while True:
 
         #print(getDistance(my_state, rival_state), " - ", my_state.PLAYER_ACTION_FRAME, f"({my_state.PLAYER_ACTION},{my_state.PLAYER_ACTION_PREVIOUS})", rival_state.PLAYER_ACTION_FRAME)
 
-    my_state.sendInput(input)
+    #my_state.sendInput(input)
+    #my_state = PlayerStatus(1)
+    my_state.sendXinput(btn=1234)
+    
     
 
     
