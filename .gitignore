@@ -5,3 +5,5 @@ muzero_brain.py
 /replay
 /ignore
 /gru-ppo-bot
+/checkpoints
+/jf_tensorboard
