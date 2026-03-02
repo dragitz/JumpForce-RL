@@ -170,10 +170,11 @@ class PlayerStatus:
         PauseTriggered = pm.read_int(STAT_PTR + 0x1C)
         CombatTimer = pm.read_float(STAT_PTR + 0x20)
         
-        WhoAmI = pm.read_int(STAT_PTR + 0xDC) # needs to be changed?
-        #print(hex(STAT_PTR + 0xDC))
+        WhoAmI = pm.read_int(STAT_PTR + 0xDC)
         return InGame, Flows, StartAllowed, StartAllowed2, Paused, Paused2, isBattleComplete, PauseTriggered, CombatTimer, WhoAmI
 
+    # 1 = P1
+    # 2 = P2
     def whoAmI():
         STAT_PTR = pm.read_longlong(AddressList + 0x8)
         return pm.read_int(STAT_PTR + 0xDC)
