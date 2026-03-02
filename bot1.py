@@ -59,10 +59,10 @@ while True:
 
     #my_state.sendInput(input)
     #my_state = PlayerStatus(1)
-    my_state.sendXinput(btn=1234)
+    #my_state.sendXinput(btn=1234)
     
-    
-
+    InGame, Flows, StartAllowed, StartAllowed2, Paused, Paused2, isBattleComplete, PauseTriggered, CombatTimer, WhoAmI = PlayerStatus.getGameStatus()
+    print(WhoAmI)
     
     #if my_state.PLAYER_ACTION != 122 and my_state.PLAYER_ACTION_PREVIOUS != 122:
     #    print(my_state.PLAYER_ACTION_FRAME)

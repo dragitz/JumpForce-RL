@@ -170,19 +170,25 @@ class PlayerStatus:
         PauseTriggered = pm.read_int(STAT_PTR + 0x1C)
         CombatTimer = pm.read_float(STAT_PTR + 0x20)
         
-        return InGame, Flows, StartAllowed, StartAllowed2, Paused, Paused2, isBattleComplete, PauseTriggered, CombatTimer
-    
+        WhoAmI = pm.read_int(STAT_PTR + 0xDC) # needs to be changed?
+        #print(hex(STAT_PTR + 0xDC))
+        return InGame, Flows, StartAllowed, StartAllowed2, Paused, Paused2, isBattleComplete, PauseTriggered, CombatTimer, WhoAmI
+
+    def whoAmI():
+        STAT_PTR = pm.read_longlong(AddressList + 0x8)
+        return pm.read_int(STAT_PTR + 0xDC)
+        
     def isGameOn():
-        InGame, Flows, StartAllowed, StartAllowed2, Paused, Paused2, isBattleComplete, PauseTriggered, CombatTimer = PlayerStatus.getGameStatus()
+        InGame, Flows, StartAllowed, StartAllowed2, Paused, Paused2, isBattleComplete, PauseTriggered, CombatTimer, WhoAmI = PlayerStatus.getGameStatus()
 
         #print(float(CombatTimer))
-        if InGame < 50 or StartAllowed == 0 or StartAllowed2 == 0 or Paused == 1 or isBattleComplete == 1 or CombatTimer == 0:
+        if InGame < 50 or StartAllowed == 0 or StartAllowed2 == 0 or Paused == 1 or isBattleComplete == 1 or CombatTimer == 0 or WhoAmI == 0:
             return False
         
         return True
     
     def isBattleComplete():
-        InGame, Flows, StartAllowed, StartAllowed2, Paused, Paused2, isBattleComplete, PauseTriggered, CombatTimer = PlayerStatus.getGameStatus()
+        InGame, Flows, StartAllowed, StartAllowed2, Paused, Paused2, isBattleComplete, PauseTriggered, CombatTimer, WhoAmI = PlayerStatus.getGameStatus()
         return isBattleComplete
     
     def killPlayer(self):
@@ -196,6 +202,7 @@ class PlayerStatus:
         
         pm.write_float(PLY_PTR + 0x28, 0.0)
         
+
 
 
     def sendInput(self, input=12345, stick_x=12345.0, stick_y=12345.0):
