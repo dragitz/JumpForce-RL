@@ -1,12 +1,9 @@
+
 /__pycache__
-ppo_brain.py
-checkpoint.pth
-muzero_brain.py
-/replay
-/ignore
-/gru-ppo-bot
 /checkpoints
-/jf_tensorboard
-recurrent_ppo.py
 /checkpoints_2
+/gru-ppo-bot
+/ignore
+/jf_tensorboard
 recurrent_ppo - Copia.py
+recurrent_ppo.py
