@@ -62,7 +62,9 @@ while True:
     #my_state.sendXinput(btn=1234)
     
     InGame, Flows, StartAllowed, StartAllowed2, Paused, Paused2, isBattleComplete, PauseTriggered, CombatTimer, WhoAmI = PlayerStatus.getGameStatus()
-    print(WhoAmI)
+    #print(WhoAmI)
+
+    print(getDistance(my_state, rival_state))
     
     #if my_state.PLAYER_ACTION != 122 and my_state.PLAYER_ACTION_PREVIOUS != 122:
     #    print(my_state.PLAYER_ACTION_FRAME)

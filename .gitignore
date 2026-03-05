@@ -8,3 +8,5 @@ muzero_brain.py
 /checkpoints
 /jf_tensorboard
 recurrent_ppo.py
+/checkpoints_2
+recurrent_ppo - Copia.py

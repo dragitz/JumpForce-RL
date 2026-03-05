@@ -86,6 +86,7 @@ def canGrab(my_state:PlayerStatus, rival_state:PlayerStatus):
     
     frame = rival_state.PLAYER_ACTION_FRAME
 
+    
     if getDistance(my_state, rival_state) >= 3.5: #4.01 3.5 is safer
         return False
 
@@ -104,6 +105,62 @@ def canGrab(my_state:PlayerStatus, rival_state:PlayerStatus):
     if RIVAL_ACTION == ActionType.UsingSkill and frame < 5:
         return False
     
+    return True
+
+
+# This is a generic function, must be combined with (eg) my_state.canUseSkillUlt
+# Note: this function ignores super
+def canUseSKills(my_state:PlayerStatus, rival_state:PlayerStatus):
+    MY_ACTION = ActionType(my_state.PLAYER_ACTION)
+    MY_ACTION_PREVIOUS = ActionType(my_state.PLAYER_ACTION_PREVIOUS)
+    RIVAL_ACTION = ActionType(rival_state.PLAYER_ACTION)
+    RIVAL_ACTION_PREVIOUS = ActionType(rival_state.PLAYER_ACTION_PREVIOUS)
+
+    if MY_ACTION in [ActionType.GettingHit, ActionType.UsingSkill, ActionType.Thrown, ActionType.Awakening]:
+        return False
+    
+    if my_state.charge < 1000:
+        return False
+    
+    if (my_state.canUseSkillCircle + my_state.canUseSkillSquare + my_state.canUseSkillTriangle) == 0:
+        return False
+    
+    # Check if enemy can guard
+    if RIVAL_ACTION in [ActionType.Nothing, ActionType.Guarding, ActionType.Moving, ActionType.Follow, ActionType.Incoming, ActionType.SuccessfulGuard, ActionType.HighSpCombatEscape]:
+        return False
+
+    # Other states where the enemy can't be hit
+    if RIVAL_ACTION in [ActionType.Awakening] or rival_state.isGod == 1:
+        return False
+    
+    return True
+
+def canUseUlt(my_state:PlayerStatus, rival_state:PlayerStatus):
+    MY_ACTION = ActionType(my_state.PLAYER_ACTION)
+    MY_ACTION_PREVIOUS = ActionType(my_state.PLAYER_ACTION_PREVIOUS)
+    RIVAL_ACTION = ActionType(rival_state.PLAYER_ACTION)
+    RIVAL_ACTION_PREVIOUS = ActionType(rival_state.PLAYER_ACTION_PREVIOUS)
+
+    # Basic condition
+    if my_state.canUseSkillUlt == 0:
+        return False
+    
+    # Check if we can exploit frames
+    if RIVAL_ACTION in [ActionType.VulnerableFramePerfect, ActionType.VulnerableSecondFrame]:
+        return True
+    
+    # Make ai not spam raw supers
+    if my_state.hp_percent > 0.5 and my_state.isHalfAwakenON == 0 and rival_state.hp_percent > 0.3:
+        return False
+
+    # Some generic states where it is impossible to use it
+    if MY_ACTION in [ActionType.GettingHit, ActionType.Awakening, ActionType.BrokenGuard]:
+        return False
+
+    # Check if enemy can guard
+    if RIVAL_ACTION in [ActionType.Nothing, ActionType.Guarding, ActionType.Moving, ActionType.Follow, ActionType.Incoming, ActionType.SuccessfulGuard, ActionType.HighSpCombatEscape]:
+        return False
+
     return True
 
 def canHighSpeedCounter(my_state:PlayerStatus, rival_state:PlayerStatus):
@@ -160,4 +217,103 @@ def canHighSpeedDodge(my_state:PlayerStatus, rival_state:PlayerStatus):
     
     return True
 
+
+# Important note: since the escape and follow button is the same, we have to ensure the rules are properly set to not interact with each other
+# Eg. the escape would be a waste, but follow is allowed therefore the ai learns to exploit that condition.
+
+def canEscape(my_state:PlayerStatus, rival_state:PlayerStatus):
+    MY_ACTION = ActionType(my_state.PLAYER_ACTION)
+    MY_ACTION_PREVIOUS = ActionType(my_state.PLAYER_ACTION_PREVIOUS)
+    RIVAL_ACTION = ActionType(rival_state.PLAYER_ACTION)
+    RIVAL_ACTION_PREVIOUS = ActionType(rival_state.PLAYER_ACTION_PREVIOUS)
+    
+    # I must be getting hit
+    if MY_ACTION != ActionType.GettingHit:
+        return False
+    
+    # Don't waste stamina, unless your health is low
+    if (my_state.stamina_percent <= 0.1 or my_state.stamina_percent >= 0.8) and my_state.hp_percent >= 0.5:
+        return False
+
+    # Disallow if rival is far and not using a skill
+    if getDistance(my_state, rival_state) >= 20 and RIVAL_ACTION != ActionType.UsingSkill:
+        return False
+
+
+    return True
+
+
+def canFollow(my_state:PlayerStatus, rival_state:PlayerStatus):
+    MY_ACTION = ActionType(my_state.PLAYER_ACTION)
+    MY_ACTION_PREVIOUS = ActionType(my_state.PLAYER_ACTION_PREVIOUS)
+    RIVAL_ACTION = ActionType(rival_state.PLAYER_ACTION)
+    RIVAL_ACTION_PREVIOUS = ActionType(rival_state.PLAYER_ACTION_PREVIOUS)
+
+    # nope, would interfere too much
+    #if not canEscape(my_state, rival_state) :
+    #    return False
+    
+    # Disallow in some situations
+    if RIVAL_ACTION in [ActionType.UsingSkill, ActionType.Awakening, ActionType.Attacking, ActionType.Nothing]:
+        return False
+
+    # Escape counter
+    if RIVAL_ACTION == ActionType.HighSpCombatEscape and RIVAL_ACTION_PREVIOUS == ActionType.GettingHit and rival_state.PLAYER_ACTION_FRAME <= 20:
+        return True
+
+    # Enemy is grabbing
+    if canGrab(rival_state, my_state) and RIVAL_ACTION in [ActionType.VulnerableFramePerfect, ActionType.VulnerableSecondFrame]:
+        return True
+    
+    # Generic moments
+    if MY_ACTION in [ActionType.Jumping, ActionType.Nothing, ActionType.Moving]:
+        return True
+
+    return False
+
+
+def canCharge(my_state:PlayerStatus, rival_state:PlayerStatus):
+    MY_ACTION = ActionType(my_state.PLAYER_ACTION)
+    MY_ACTION_PREVIOUS = ActionType(my_state.PLAYER_ACTION_PREVIOUS)
+    RIVAL_ACTION = ActionType(rival_state.PLAYER_ACTION)
+    RIVAL_ACTION_PREVIOUS = ActionType(rival_state.PLAYER_ACTION_PREVIOUS)
+
+    # Generally charging is better done at further distances, also don't spend time charging
+    if getDistance(my_state, rival_state) < 15 or my_state.charge >= 4000:
+        return False
+    
+
+    # Rival is doing or about to behave aggressively
+    if RIVAL_ACTION in [ActionType.UsingSkill, ActionType.Incoming, ActionType.SwappedCharacter]:
+        return False
+
+
+    if MY_ACTION in [ActionType.Moving, ActionType.Nothing, ActionType.Charging]:
+        return True
+
+    
+    return False
+
+
+def canJump(my_state:PlayerStatus, rival_state:PlayerStatus):
+    MY_ACTION = ActionType(my_state.PLAYER_ACTION)
+    MY_ACTION_PREVIOUS = ActionType(my_state.PLAYER_ACTION_PREVIOUS)
+    RIVAL_ACTION = ActionType(rival_state.PLAYER_ACTION)
+    RIVAL_ACTION_PREVIOUS = ActionType(rival_state.PLAYER_ACTION_PREVIOUS)
+
+    if MY_ACTION in [ActionType.OnGround, ActionType.StandingUp, ActionType.Nothing, ActionType.Moving, ActionType.Jumping]:
+        return True
+
+    return False
+
+def canSwap(my_state:PlayerStatus, rival_state:PlayerStatus):
+    MY_ACTION = ActionType(my_state.PLAYER_ACTION)
+    MY_ACTION_PREVIOUS = ActionType(my_state.PLAYER_ACTION_PREVIOUS)
+    RIVAL_ACTION = ActionType(rival_state.PLAYER_ACTION)
+    RIVAL_ACTION_PREVIOUS = ActionType(rival_state.PLAYER_ACTION_PREVIOUS)
+
+    if my_state.switchCharacterTimer1 == 0:
+        return True
+    
+    return False
 

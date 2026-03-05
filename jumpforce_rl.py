@@ -1,4 +1,6 @@
 import pymem
+import numpy as np
+
 #from helper_functions import *
 
 
@@ -16,6 +18,8 @@ ADDRESSLIST_OFFSET = 0x1ECB482
 AddressList = BASE + ADDRESSLIST_OFFSET
 AddressList = pm.read_longlong(AddressList)
 print("JumpForce AddressList memory: ",hex(AddressList))
+
+
 
 class PlayerStatus:
     def __init__(self, player_id=1):
@@ -205,7 +209,6 @@ class PlayerStatus:
         
 
 
-
     def sendInput(self, input=12345, stick_x=12345.0, stick_y=12345.0):
 
         CONTROLLER_PTR = pm.read_longlong(AddressList + 0x30)
@@ -235,5 +238,10 @@ class PlayerStatus:
     def sendXinput(self, btn=0):
 
         #BUTTONS_PTR = pm.read_longlong(AddressList - 0xFBCC)
+        
         BUTTONS_PTR = pm.read_longlong(AddressList + 0x8)
-        pm.write_short(BUTTONS_PTR + 0x24, btn)
+        if self.id == 1:
+            pm.write_short(BUTTONS_PTR + 0x24, btn)
+        
+        if self.id == 2:
+            pm.write_short(BUTTONS_PTR + 0x28, btn)
