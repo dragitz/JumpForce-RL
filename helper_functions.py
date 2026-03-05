@@ -290,6 +290,10 @@ def canFollow(my_state:PlayerStatus, rival_state:PlayerStatus):
     if canGrab(rival_state, my_state) and RIVAL_ACTION in [ActionType.VulnerableFramePerfect, ActionType.VulnerableSecondFrame]:
         return True
     
+    # Follow after throw or combo started
+    if MY_ACTION in [ActionType.ComboStarted] or RIVAL_ACTION in [ActionType.Thrown]:
+        return True
+    
     # Generic moments
     if MY_ACTION in [ActionType.Jumping, ActionType.Nothing, ActionType.Moving]:
         return True
