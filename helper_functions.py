@@ -16,6 +16,28 @@ def canGuardBreak(my_state:PlayerStatus, rival_state:PlayerStatus):
 
     return False
 
+def canGuard(my_state:PlayerStatus, rival_state:PlayerStatus):
+    MY_ACTION = ActionType(my_state.PLAYER_ACTION)
+    MY_ACTION_PREVIOUS = ActionType(my_state.PLAYER_ACTION_PREVIOUS)
+    RIVAL_ACTION = ActionType(rival_state.PLAYER_ACTION)
+    RIVAL_ACTION_PREVIOUS = ActionType(rival_state.PLAYER_ACTION_PREVIOUS)
+
+    
+    if MY_ACTION in [ActionType.Guarding, ActionType.SuccessfulGuard, ActionType.Nothing, ActionType.Moving]:
+        return True
+    
+    if MY_ACTION in [ActionType.GettingHit, ActionType.HighSpCombatEscape, ActionType.HighSpCounterAttack, ActionType.HighSpDodge, ActionType.Thrown]:
+        return True
+    
+    if RIVAL_ACTION in [ActionType.UsingSkill, ActionType.Attacking]:
+        return True
+
+    if RIVAL_ACTION in [ActionType.JumpHeavyAttack, ActionType.JumpHeavyAttackCharged, ActionType.JumpLightAttack, ActionType.JumpLightAttackCharged]:
+        return True
+
+    return False
+
+
 def canAwaken(my_state:PlayerStatus, rival_state:PlayerStatus):
     MY_ACTION = ActionType(my_state.PLAYER_ACTION)
     RIVAL_ACTION = ActionType(rival_state.PLAYER_ACTION)
@@ -39,6 +61,9 @@ def canAttack(my_state:PlayerStatus, rival_state:PlayerStatus):
     if RIVAL_ACTION in [ActionType.GettingHit, ActionType.BrokenGuard]:
         return True
     
+    if MY_ACTION in [ActionType.Attacking, ActionType.Nothing]:
+        return True
+
     return False
 
 def canChargeTp(my_state:PlayerStatus, rival_state:PlayerStatus):
@@ -116,7 +141,7 @@ def canUseSKills(my_state:PlayerStatus, rival_state:PlayerStatus):
     RIVAL_ACTION = ActionType(rival_state.PLAYER_ACTION)
     RIVAL_ACTION_PREVIOUS = ActionType(rival_state.PLAYER_ACTION_PREVIOUS)
 
-    if MY_ACTION in [ActionType.GettingHit, ActionType.UsingSkill, ActionType.Thrown, ActionType.Awakening]:
+    if MY_ACTION in [ActionType.GettingHit, ActionType.UsingSkill, ActionType.Thrown, ActionType.Awakening, ActionType.Attacking]:
         return False
     
     if my_state.charge < 1000:

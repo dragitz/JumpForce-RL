@@ -64,7 +64,7 @@ while True:
     InGame, Flows, StartAllowed, StartAllowed2, Paused, Paused2, isBattleComplete, PauseTriggered, CombatTimer, WhoAmI = PlayerStatus.getGameStatus()
     #print(WhoAmI)
 
-    print(getDistance(my_state, rival_state))
+    print(canAttack(my_state, rival_state) or canUseSKills(my_state, rival_state))
     
     #if my_state.PLAYER_ACTION != 122 and my_state.PLAYER_ACTION_PREVIOUS != 122:
     #    print(my_state.PLAYER_ACTION_FRAME)
