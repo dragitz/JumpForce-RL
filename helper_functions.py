@@ -61,19 +61,35 @@ def canAwaken(my_state:PlayerStatus, rival_state:PlayerStatus):
 
 def canAttack(my_state:PlayerStatus, rival_state:PlayerStatus):
     MY_ACTION = ActionType(my_state.PLAYER_ACTION)
+    MY_ACTION_PREVIOUS = ActionType(my_state.PLAYER_ACTION_PREVIOUS)
     RIVAL_ACTION = ActionType(rival_state.PLAYER_ACTION)
-    
-    dist = getDistance(my_state, rival_state)
+    RIVAL_ACTION_PREVIOUS = ActionType(rival_state.PLAYER_ACTION_PREVIOUS)
 
-    if dist > 10.5:
+    dist = getDistance(my_state, rival_state)
+    frame = my_state.PLAYER_ACTION_FRAME
+
+    # Counter values
+    if MY_ACTION_PREVIOUS in [ActionType.Incoming, ActionType.Thrown,
+                              ActionType.GettingHit, ActionType.Nothing, 
+                              ActionType.Jumping, ActionType.GuardDodge, 
+                              ActionType.ChargedAttack, ActionType.Attacking]: # UsingSkill detected, maybe bug
+        if dist >= 0.6 and dist < 7 and frame >= 8 and frame < 172:
+            return True
+    
+    # No spam
+    if dist > 10.5 or frame <= 10:
         return False
     
+    # Generic actions
     if RIVAL_ACTION in [ActionType.GettingHit, ActionType.BrokenGuard, ActionType.HighSpDodge, ActionType.HighSpCounterAttack, ActionType.Attacking, ActionType.SwappedCharacter]:
         return True
     
     if MY_ACTION in [ActionType.Attacking, ActionType.Nothing, ActionType.ChargedAttack, ActionType.Jumping]:
         return True
 
+    if RIVAL_ACTION_PREVIOUS in [ActionType.GettingHit]:
+        return True
+    
     return False
 
 def canChargeTp(my_state:PlayerStatus, rival_state:PlayerStatus):
@@ -187,14 +203,15 @@ def canUseUlt(my_state:PlayerStatus, rival_state:PlayerStatus):
     # Basic condition
     if my_state.canUseSkillUlt == 0:
         return False
-    
+
+    # Make ai not spam raw supers
+    if my_state.isHalfAwakenON == 0 and (my_state.hp_percent > 0.5 or rival_state.hp_percent > 0.3) :
+        return False
+
     # Check if we can exploit frames
     if RIVAL_ACTION in [ActionType.VulnerableFramePerfect, ActionType.VulnerableSecondFrame]:
         return True
     
-    # Make ai not spam raw supers
-    if my_state.hp_percent > 0.5 and my_state.isHalfAwakenON == 0 and rival_state.hp_percent > 0.3:
-        return False
 
     # Some generic states where it is impossible to use it
     if MY_ACTION in [ActionType.GettingHit, ActionType.Awakening, ActionType.BrokenGuard]:
@@ -361,6 +378,9 @@ def canSwap(my_state:PlayerStatus, rival_state:PlayerStatus):
 
     # Time is probably frozen
     if my_state.PLAYER_ACTION_FRAME == 0 or rival_state.PLAYER_ACTION_FRAME == 0:
+        return False
+    
+    if MY_ACTION == ActionType.GettingHit:
         return False
     
     if my_state.switchCharacterTimer1 == 0:
