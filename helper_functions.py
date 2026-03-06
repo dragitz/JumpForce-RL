@@ -81,7 +81,8 @@ def canAttack(my_state:PlayerStatus, rival_state:PlayerStatus):
         return False
     
     # Generic actions
-    if RIVAL_ACTION in [ActionType.GettingHit, ActionType.BrokenGuard, ActionType.HighSpDodge, ActionType.HighSpCounterAttack, ActionType.Attacking, ActionType.SwappedCharacter]:
+    if RIVAL_ACTION in [ActionType.GettingHit, ActionType.BrokenGuard, ActionType.HighSpDodge, 
+                        ActionType.HighSpCounterAttack, ActionType.Attacking, ActionType.SwappedCharacter, ActionType.StandingUp]:
         return True
     
     if MY_ACTION in [ActionType.Attacking, ActionType.Nothing, ActionType.ChargedAttack, ActionType.Jumping]:
