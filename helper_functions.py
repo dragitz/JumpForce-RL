@@ -58,7 +58,7 @@ def canAttack(my_state:PlayerStatus, rival_state:PlayerStatus):
     if dist > 10.5:
         return False
     
-    if RIVAL_ACTION in [ActionType.GettingHit, ActionType.BrokenGuard]:
+    if RIVAL_ACTION in [ActionType.GettingHit, ActionType.BrokenGuard, ActionType.HighSpDodge, ActionType.HighSpCounterAttack, ActionType.Attacking, ActionType.SwappedCharacter]:
         return True
     
     if MY_ACTION in [ActionType.Attacking, ActionType.Nothing]:

@@ -80,9 +80,9 @@ class PlayerStatus:
         
         # For some reason the game tracks them all equally, choose one
         # 0.0 can - >0 can not (from 0.0 to 1.0)
-        self.switchCharacterTimer1    = pm.read_int(PLY_PTR + 0x28C)
-        self.switchCharacterTimer2    = pm.read_int(PLY_PTR + 0x290)
-        self.switchCharacterTimer3    = pm.read_int(PLY_PTR + 0x294)
+        self.switchCharacterTimer1    = pm.read_float(PLY_PTR + 0x28C)
+        self.switchCharacterTimer2    = pm.read_float(PLY_PTR + 0x290)
+        self.switchCharacterTimer3    = pm.read_float(PLY_PTR + 0x294)
         
 
         # simplified and raw actions + current action frame
