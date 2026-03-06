@@ -22,18 +22,28 @@ def canGuard(my_state:PlayerStatus, rival_state:PlayerStatus):
     RIVAL_ACTION = ActionType(rival_state.PLAYER_ACTION)
     RIVAL_ACTION_PREVIOUS = ActionType(rival_state.PLAYER_ACTION_PREVIOUS)
 
-    
-    if MY_ACTION in [ActionType.Guarding, ActionType.SuccessfulGuard, ActionType.Nothing, ActionType.Moving]:
-        return True
-    
-    if MY_ACTION in [ActionType.GettingHit, ActionType.HighSpCombatEscape, ActionType.HighSpCounterAttack, ActionType.HighSpDodge, ActionType.Thrown]:
-        return True
-    
-    if RIVAL_ACTION in [ActionType.UsingSkill, ActionType.Attacking]:
+    # We just got hit, can't do this
+    if MY_ACTION == ActionType.GettingHit and my_state.PLAYER_ACTION_FRAME < 10:
+        return False
+
+    # Normal situations
+    if MY_ACTION in [ActionType.Guarding, ActionType.SuccessfulGuard, 
+                     ActionType.Nothing, ActionType.Moving] and RIVAL_ACTION in [ActionType.UsingSkill, ActionType.Attacking]:
         return True
 
-    if RIVAL_ACTION in [ActionType.JumpHeavyAttack, ActionType.JumpHeavyAttackCharged, ActionType.JumpLightAttack, ActionType.JumpLightAttackCharged]:
+    # Parry those
+    if RIVAL_ACTION in [ActionType.JumpHeavyAttack, ActionType.JumpHeavyAttackCharged, 
+                        ActionType.JumpLightAttack, ActionType.JumpLightAttackCharged]:
         return True
+    
+    # Vanish
+    if my_state.stamina_percent >= 0.1:
+        if MY_ACTION in [ActionType.GettingHit, ActionType.HighSpCombatEscape, 
+                     ActionType.HighSpCounterAttack, ActionType.HighSpDodge, 
+                     ActionType.Thrown] or RIVAL_ACTION in [ActionType.HighSpCounterAttack, ActionType.HighSpDodge]:
+            return True
+    
+
 
     return False
 
@@ -61,7 +71,7 @@ def canAttack(my_state:PlayerStatus, rival_state:PlayerStatus):
     if RIVAL_ACTION in [ActionType.GettingHit, ActionType.BrokenGuard, ActionType.HighSpDodge, ActionType.HighSpCounterAttack, ActionType.Attacking, ActionType.SwappedCharacter]:
         return True
     
-    if MY_ACTION in [ActionType.Attacking, ActionType.Nothing]:
+    if MY_ACTION in [ActionType.Attacking, ActionType.Nothing, ActionType.ChargedAttack, ActionType.Jumping]:
         return True
 
     return False
@@ -130,6 +140,12 @@ def canGrab(my_state:PlayerStatus, rival_state:PlayerStatus):
     if RIVAL_ACTION == ActionType.UsingSkill and frame < 5:
         return False
     
+    # Situations where it is not possible
+    if MY_ACTION == ActionType.GettingHit:
+        return False
+    
+    #print(MY_ACTION)
+
     return True
 
 
@@ -141,7 +157,9 @@ def canUseSKills(my_state:PlayerStatus, rival_state:PlayerStatus):
     RIVAL_ACTION = ActionType(rival_state.PLAYER_ACTION)
     RIVAL_ACTION_PREVIOUS = ActionType(rival_state.PLAYER_ACTION_PREVIOUS)
 
-    if MY_ACTION in [ActionType.GettingHit, ActionType.UsingSkill, ActionType.Thrown, ActionType.Awakening, ActionType.Attacking]:
+    if MY_ACTION in [ActionType.GettingHit, ActionType.UsingSkill, 
+                     ActionType.Thrown, ActionType.Awakening, 
+                     ActionType.Attacking, ActionType.Follow, ActionType.Incoming, ActionType.StandingUp]:
         return False
     
     if my_state.charge < 1000:
@@ -153,7 +171,7 @@ def canUseSKills(my_state:PlayerStatus, rival_state:PlayerStatus):
     # Check if enemy can guard
     if RIVAL_ACTION in [ActionType.Nothing, ActionType.Guarding, ActionType.Moving, ActionType.Follow, ActionType.Incoming, ActionType.SuccessfulGuard, ActionType.HighSpCombatEscape]:
         return False
-
+    
     # Other states where the enemy can't be hit
     if RIVAL_ACTION in [ActionType.Awakening] or rival_state.isGod == 1:
         return False
@@ -330,7 +348,7 @@ def canJump(my_state:PlayerStatus, rival_state:PlayerStatus):
     RIVAL_ACTION = ActionType(rival_state.PLAYER_ACTION)
     RIVAL_ACTION_PREVIOUS = ActionType(rival_state.PLAYER_ACTION_PREVIOUS)
 
-    if MY_ACTION in [ActionType.OnGround, ActionType.StandingUp, ActionType.Nothing, ActionType.Moving, ActionType.Jumping]:
+    if MY_ACTION in [ActionType.OnGround, ActionType.StandingUp, ActionType.Nothing, ActionType.Moving]: #, ActionType.Jumping
         return True
 
     return False
@@ -341,6 +359,10 @@ def canSwap(my_state:PlayerStatus, rival_state:PlayerStatus):
     RIVAL_ACTION = ActionType(rival_state.PLAYER_ACTION)
     RIVAL_ACTION_PREVIOUS = ActionType(rival_state.PLAYER_ACTION_PREVIOUS)
 
+    # Time is probably frozen
+    if my_state.PLAYER_ACTION_FRAME == 0 or rival_state.PLAYER_ACTION_FRAME == 0:
+        return False
+    
     if my_state.switchCharacterTimer1 == 0:
         return True
     
