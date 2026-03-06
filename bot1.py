@@ -5,7 +5,7 @@ import math
 import numpy as np
 from data_type import ActionType, Vpad
 
-REACTION_TIME_MS = 1 / 1000
+REACTION_TIME_MS = 0.1 / 1000
 
 
 def setVpad(value, mask):
@@ -17,8 +17,28 @@ def setVpad(value, mask):
 def clearVpad(value, mask):
     return value & ~mask
 
+MY_STATE = None
+RIVAL_STATE = None
+
+P1_PREV = None
+P2_PREV = None
+
+max_dist = 0
+min_dist = 99
+max_frame = 0
+min_frame = 99
+
+VALID_STATES = []
+
+ACTION_BUFFER = []  # rolling history of recent actions
+BUFFER_SIZE = 10
 
 while True:
+
+    # setup previous frame
+    if MY_STATE != None:
+        P1_PREV = MY_STATE.clone()
+        P2_PREV = RIVAL_STATE.clone()
 
     time.sleep(REACTION_TIME_MS)
 
@@ -27,61 +47,36 @@ while True:
         time.sleep(0.5)
         continue
 
-    my_state = PlayerStatus(1)
-    rival_state = PlayerStatus(2)
-
-    # Default, no hijacking
-    input = 12345
-    
-    # Frame perfect quick tp after holding the attack button
-    if canChargeTp(my_state, rival_state):
-        input = 0
-    """    
-        
-        if canJumpHeavy(my_state, rival_state):
-            input = setVpad(input, Vpad.HEAVY)
-
-        if canGrab(my_state, rival_state):
-            input = setVpad(input, Vpad.GRAB)
-    """
-
-    if canHighSpeedCounter(my_state, rival_state):
-        input = 0
-        input = setVpad(input, Vpad.LIGHT)
-
-        print(getDistance(my_state, rival_state), " - ", my_state.PLAYER_ACTION_FRAME, f"({my_state.PLAYER_ACTION},{my_state.PLAYER_ACTION_PREVIOUS})", rival_state.PLAYER_ACTION_FRAME)
-    
-    if canHighSpeedDodge(my_state, rival_state):
-        input = 0
-        input = setVpad(input, Vpad.GUARD)
-
-        #print(getDistance(my_state, rival_state), " - ", my_state.PLAYER_ACTION_FRAME, f"({my_state.PLAYER_ACTION},{my_state.PLAYER_ACTION_PREVIOUS})", rival_state.PLAYER_ACTION_FRAME)
-
-    #my_state.sendInput(input)
-    #my_state = PlayerStatus(1)
-    #my_state.sendXinput(btn=1234)
+    MY_STATE = PlayerStatus(2)
+    RIVAL_STATE = PlayerStatus(1)
     
     InGame, Flows, StartAllowed, StartAllowed2, Paused, Paused2, isBattleComplete, PauseTriggered, CombatTimer, WhoAmI = PlayerStatus.getGameStatus()
-    #print(WhoAmI)
 
-    print(canAttack(my_state, rival_state) or canUseSKills(my_state, rival_state))
+    distance = getDistance(MY_STATE, RIVAL_STATE)
+
+    if P1_PREV == None:
+        continue
     
-    #if my_state.PLAYER_ACTION != 122 and my_state.PLAYER_ACTION_PREVIOUS != 122:
-    #    print(my_state.PLAYER_ACTION_FRAME)
+    frame = P1_PREV.PLAYER_ACTION_FRAME
+    changed = MY_STATE.PLAYER_ACTION != P1_PREV.PLAYER_ACTION
 
 
-"""    input = 0
-    input = setVpad(input, Vpad.CHARGE)
-    input = setVpad(input, Vpad.UNKNOWN)
+    if changed and ActionType(MY_STATE.PLAYER_ACTION) == ActionType.HighSpCounterAttack:
+        
+        #print(f"Action changed: {P1_PREV.PLAYER_ACTION} -> {MY_STATE.PLAYER_ACTION} (raw: {MY_STATE.PLAYER_ACTION})")
+        
+        if distance < min_dist:
+            min_dist = distance
+        if distance > max_dist:
+            max_dist = distance
+        if P1_PREV.PLAYER_ACTION_FRAME < min_frame:
+            min_frame = P1_PREV.PLAYER_ACTION_FRAME
+        if P1_PREV.PLAYER_ACTION_FRAME > max_frame:
+            max_frame = P1_PREV.PLAYER_ACTION_FRAME
 
-    # Uses helper function to figure out when it can awaken
-    if canAwaken(my_state, rival_state):
-        input = setVpad(input, Vpad.AWAKEN)
+        print("Counter: ",min_dist, max_dist, min_frame, max_frame)
 
-    if canAttack(my_state, rival_state):
-        input = setVpad(input, Vpad.LIGHT)
-        input = setVpad(input, Vpad.HEAVY)"""
-    
-    
-    #print(my_state.vpad_left_right)
-    
+        if P1_PREV.PLAYER_ACTION not in VALID_STATES:
+            VALID_STATES.append(P1_PREV.PLAYER_ACTION)
+            print(f"New pre-counter state: {P1_PREV.PLAYER_ACTION} ({ActionType(P1_PREV.PLAYER_ACTION)})")
+
