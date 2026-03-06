@@ -28,7 +28,7 @@ def canGuard(my_state:PlayerStatus, rival_state:PlayerStatus):
 
     # Normal situations
     if MY_ACTION in [ActionType.Guarding, ActionType.SuccessfulGuard, 
-                     ActionType.Nothing, ActionType.Moving] and RIVAL_ACTION in [ActionType.UsingSkill, ActionType.Attacking]:
+                     ActionType.Nothing, ActionType.Moving, ActionType.Charging] and RIVAL_ACTION in [ActionType.UsingSkill, ActionType.Attacking]:
         return True
 
     # Parry those
@@ -366,7 +366,7 @@ def canJump(my_state:PlayerStatus, rival_state:PlayerStatus):
     RIVAL_ACTION = ActionType(rival_state.PLAYER_ACTION)
     RIVAL_ACTION_PREVIOUS = ActionType(rival_state.PLAYER_ACTION_PREVIOUS)
 
-    if MY_ACTION in [ActionType.OnGround, ActionType.StandingUp, ActionType.Nothing, ActionType.Moving]: #, ActionType.Jumping
+    if MY_ACTION in [ActionType.OnGround, ActionType.StandingUp, ActionType.Nothing]: #, ActionType.Jumping , ActionType.Moving when moving for some reason it doesn't jump?
         return True
 
     return False

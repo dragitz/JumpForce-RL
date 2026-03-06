@@ -337,6 +337,9 @@ class JumpForceEnv(gym.Env):
             if p1_action == ActionType.HighSpDodge:
                 reward += 0.1
             
+            # secret reward (rare)
+            if p1_action == ActionType.AreaChange:
+                reward += 5.0
 
         # end
         InGame, Flows, StartAllowed, StartAllowed2, Paused, Paused2, ko_done, PauseTriggered, CombatTimer, WhoAmI = PlayerStatus.getGameStatus()
@@ -401,7 +404,7 @@ if __name__ == "__main__":
     CHECKPOINT_DIR    = "./checkpoints/"
     CHECKPOINT_PREFIX = "jumpforce_mppo"
     SAVE_EVERY_STEPS  = 10_000
-    TOTAL_TIMESTEPS   = 800_000
+    TOTAL_TIMESTEPS   = 1_150_000
 
     os.makedirs(CHECKPOINT_DIR, exist_ok=True)
 
