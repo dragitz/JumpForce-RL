@@ -32,11 +32,10 @@ from helper_functions import *
 #  20  p2 stamina_percent      0–1
 # ---------------------------------------------------------------------------
 
-OBS_DIM    = 41
+OBS_DIM    = 49
 MAX_COMBO  = 200.0
 MAX_ACTION = 50.0
 MAX_DELTA  = 50.0
-MAX_DIST   = 200.0
 MAX_TIMER  = 100.0
 
 # ---------------------------------------------------------------------------
@@ -206,12 +205,30 @@ class JumpForceEnv(gym.Env):
         dy   = np.clip((p1.y - p2.y) / MAX_DELTA, -1.0, 1.0)
         dz   = np.clip((p1.z - p2.z) / MAX_DELTA, -1.0, 1.0)
         
-        dist = getDistance(p1, p2) / 200
+        # During area change the distance might increase.
+        # Radius or the arena is ~35 units, which means 70 units should be the max distance between the two players
+        dist = min(getDistance(p1, p2) / 70, 1.0)
+
+        # 4 distances compared to the arena limits
+        # this assumes no area changes will happen (still have to code that)
+        p1_sides = getArenaDistance(p1)
+        p2_sides = getArenaDistance(p2)
 
         InGame, Flows, StartAllowed, StartAllowed2, Paused, Paused2, isBattleComplete, PauseTriggered, CombatTimer, WhoAmI = PlayerStatus.getGameStatus()
         timer_norm = np.clip(float(CombatTimer) / MAX_TIMER, 0.0, 1.0)
 
         return np.array([
+            
+            min(p1_sides[0] / 70, 1.0),
+            min(p1_sides[1] / 70, 1.0),
+            min(p1_sides[2] / 70, 1.0),
+            min(p1_sides[3] / 70, 1.0),
+
+            min(p2_sides[0] / 70, 1.0),
+            min(p2_sides[1] / 70, 1.0),
+            min(p2_sides[2] / 70, 1.0),
+            min(p2_sides[3] / 70, 1.0),
+
             p1.hp_percent,
             p1.charge_percent,
             p1.stamina_percent,
@@ -280,7 +297,7 @@ class JumpForceEnv(gym.Env):
         while not PlayerStatus.isGameOn():
             time.sleep(0.05)
 
-        time.sleep(0.1)
+        time.sleep(0.01)
 
         obs = self._get_obs()
         #print(len(obs))
@@ -303,10 +320,7 @@ class JumpForceEnv(gym.Env):
             PlayerStatus(player_id=1).sendXinput(btn=btn)
         else:
             PlayerStatus(player_id=1).sendXinput(btn=0)  # release all buttons
-                    
-        #btn = self._build_input(dir_idx, act_idx)
-
-        #PlayerStatus(player_id=1).sendXinput(btn=btn)
+        
         time.sleep(self.step_delay)
 
         obs = self._get_obs()
@@ -325,21 +339,21 @@ class JumpForceEnv(gym.Env):
         reward += (p2_hp_delta - p1_hp_delta) / 100
 
         combo_delta = p1.combo - self._prev_combo
-        if p1.combo <= 40 and p1.combo >= 7 and combo_delta > 0:
+        if p1.combo <= 30 and p1.combo >= 7 and combo_delta > 0:
             reward += combo_delta * 0.0025
 
         changed = p1.PLAYER_ACTION != self._prev_action
 
         if changed:
             if p1_action == ActionType.HighSpCounterAttack:
-                reward += 1.5
+                reward += 0.5
             
             if p1_action == ActionType.HighSpDodge:
                 reward += 0.1
             
             # secret reward (rare)
             if p1_action == ActionType.AreaChange:
-                reward += 5.0
+                reward += 0.1
 
         # end
         InGame, Flows, StartAllowed, StartAllowed2, Paused, Paused2, ko_done, PauseTriggered, CombatTimer, WhoAmI = PlayerStatus.getGameStatus()
@@ -397,14 +411,14 @@ if __name__ == "__main__":
     from stable_baselines3.common.callbacks import CheckpointCallback
 
     INFERENCE_ONLY   = False
-    SPEED_MULTIPLIER = 1      # 4 = 240fps, 5 = 300fps, 6 = 360fps
-    REACTION_MS      = 10    # target reaction time at 60fps
+    SPEED_MULTIPLIER = 10      # 4 = 240fps, 5 = 300fps, 6 = 360fps, 10 = 600fps, 15 = 900fps
+    REACTION_MS      = 100     # target reaction time at 60fps
     STEP_DELAY       = (REACTION_MS / 1000) / SPEED_MULTIPLIER  # 0.025s
 
     CHECKPOINT_DIR    = "./checkpoints/"
     CHECKPOINT_PREFIX = "jumpforce_mppo"
     SAVE_EVERY_STEPS  = 10_000
-    TOTAL_TIMESTEPS   = 1_150_000
+    TOTAL_TIMESTEPS   = 1_000_000
 
     os.makedirs(CHECKPOINT_DIR, exist_ok=True)
 
@@ -428,7 +442,10 @@ if __name__ == "__main__":
         model = MaskablePPO.load(
             latest,
             env=env,
-            custom_objects={"policy_kwargs": dict(net_arch=[256, 256])}
+            custom_objects={
+                "policy_kwargs": dict(net_arch=[256, 256, 256]),
+                "ent_coef": 0.01
+            }
         )
         steps_done = _ckpt_steps(existing[-1])
         remaining  = max(TOTAL_TIMESTEPS - steps_done, 0)
@@ -442,7 +459,7 @@ if __name__ == "__main__":
             batch_size=256,
             learning_rate=3e-4,
             ent_coef=0.01,
-            policy_kwargs=dict(net_arch=[256, 256]),
+            policy_kwargs=dict(net_arch=[256, 256, 256]),
             tensorboard_log="./jf_tensorboard/"
         )
         remaining = TOTAL_TIMESTEPS
@@ -450,7 +467,7 @@ if __name__ == "__main__":
     if INFERENCE_ONLY:
         obs, _ = env.reset()
         while True:
-            action, _ = model.predict(obs, action_masks=env.action_masks(), deterministic=True)
+            action, _ = model.predict(obs, action_masks=env.action_masks(), deterministic=False)
             obs, _, terminated, truncated, info = env.step(action)
             print(f"Dir: {info['dir']}  Action: {info['action']}") #  Btn: {info['btn']}  --  {info['AT_P1']} - {info['AT_P2']}
             if terminated or truncated:
@@ -465,6 +482,6 @@ if __name__ == "__main__":
         model.learn(
             total_timesteps=remaining,
             callback=checkpoint_cb,
-            reset_num_timesteps=False,
+            reset_num_timesteps=False
         )
         model.save(os.path.join(CHECKPOINT_DIR, f"{CHECKPOINT_PREFIX}_final"))

@@ -33,6 +33,22 @@ VALID_STATES = []
 ACTION_BUFFER = []  # rolling history of recent actions
 BUFFER_SIZE = 10
 
+minX = -35
+maxX = 35
+minZ = -35
+maxZ = 35
+
+centerX = (minX + maxX) / 2
+centerZ = (minZ + maxZ) / 2
+radius  = (maxX - minX) / 2
+
+print("Radius:",radius)
+
+centerX = (minX + maxX) / 2.0
+centerZ = (minZ + maxZ) / 2.0
+
+print("Center: ", centerX, centerZ)
+
 while True:
 
     # setup previous frame
@@ -47,8 +63,8 @@ while True:
         time.sleep(0.5)
         continue
 
-    MY_STATE = PlayerStatus(2)
-    RIVAL_STATE = PlayerStatus(1)
+    MY_STATE = PlayerStatus(1)
+    RIVAL_STATE = PlayerStatus(2)
     
     InGame, Flows, StartAllowed, StartAllowed2, Paused, Paused2, isBattleComplete, PauseTriggered, CombatTimer, WhoAmI = PlayerStatus.getGameStatus()
 
@@ -60,6 +76,7 @@ while True:
     frame = P1_PREV.PLAYER_ACTION_FRAME
     changed = MY_STATE.PLAYER_ACTION != P1_PREV.PLAYER_ACTION
 
+    print(getDistance(MY_STATE,RIVAL_STATE))
 
     if changed and ActionType(MY_STATE.PLAYER_ACTION) == ActionType.HighSpCounterAttack:
         
