@@ -45,12 +45,14 @@ def canGuard(my_state:PlayerStatus, rival_state:PlayerStatus):
     RIVAL_ACTION_PREVIOUS = ActionType(rival_state.PLAYER_ACTION_PREVIOUS)
 
     # We just got hit, can't do this
-    if MY_ACTION == ActionType.GettingHit and my_state.PLAYER_ACTION_FRAME < 10:
+    if MY_ACTION == ActionType.GettingHit and my_state.PLAYER_ACTION_FRAME <= 7:
         return False
 
     # Normal situations
     if MY_ACTION in [ActionType.Guarding, ActionType.SuccessfulGuard, 
-                     ActionType.Nothing, ActionType.Moving, ActionType.Charging] and RIVAL_ACTION in [ActionType.UsingSkill, ActionType.Attacking]:
+                     ActionType.Nothing, ActionType.Moving, ActionType.Charging, 
+                     ActionType.HighSpCombatEscape, ActionType.GettingHit] and RIVAL_ACTION in [ActionType.UsingSkill, 
+                                                                         ActionType.Attacking]:
         return True
 
     # Parry those
@@ -65,7 +67,12 @@ def canGuard(my_state:PlayerStatus, rival_state:PlayerStatus):
                      ActionType.Thrown] or RIVAL_ACTION in [ActionType.HighSpCounterAttack, ActionType.HighSpDodge]:
             return True
     
-
+    # Cancel incoming
+    if MY_ACTION in [ActionType.Incoming, ActionType.Follow] and getDistance(my_state, rival_state) < 30:
+        return True
+    
+    if MY_ACTION in [ActionType.SwappedCharacter]:
+        return True
 
     return False
 
@@ -234,6 +241,22 @@ def canUseUlt(my_state:PlayerStatus, rival_state:PlayerStatus):
     if my_state.isHalfAwakenON == 0 and (my_state.hp_percent > 0.5 or rival_state.hp_percent > 0.3) :
         return False
 
+    # Check if enemy can guard
+    if RIVAL_ACTION in [ActionType.Nothing, ActionType.Guarding, ActionType.Moving, 
+                        ActionType.Follow, ActionType.Incoming, ActionType.SuccessfulGuard, 
+                        ActionType.HighSpCombatEscape,ActionType.StandingUp, ActionType.OnGround]:
+        return False
+    
+    # Enemy can guard?
+    if RIVAL_ACTION_PREVIOUS in [ActionType.Incoming, ActionType.Follow]:
+        return False
+    
+
+    # At some point (aka frames) opponent can guard regardless of current and previous state
+    # observation is at 188 frames
+    if rival_state.PLAYER_ACTION_FRAME >= 100:
+        return False
+
     # Check if we can exploit frames
     if RIVAL_ACTION in [ActionType.VulnerableFramePerfect, ActionType.VulnerableSecondFrame]:
         return True
@@ -243,10 +266,9 @@ def canUseUlt(my_state:PlayerStatus, rival_state:PlayerStatus):
     if MY_ACTION in [ActionType.GettingHit, ActionType.Awakening, ActionType.BrokenGuard]:
         return False
 
-    # Check if enemy can guard
-    if RIVAL_ACTION in [ActionType.Nothing, ActionType.Guarding, ActionType.Moving, ActionType.Follow, ActionType.Incoming, ActionType.SuccessfulGuard, ActionType.HighSpCombatEscape]:
-        return False
 
+
+    
     return True
 
 def canHighSpeedCounter(my_state:PlayerStatus, rival_state:PlayerStatus):
@@ -369,7 +391,7 @@ def canCharge(my_state:PlayerStatus, rival_state:PlayerStatus):
     RIVAL_ACTION_PREVIOUS = ActionType(rival_state.PLAYER_ACTION_PREVIOUS)
 
     # Generally charging is better done at further distances, also don't spend time charging
-    if getDistance(my_state, rival_state) < 15 or my_state.charge >= 4000:
+    if getDistance(my_state, rival_state) < 10 or my_state.charge >= 4000:
         return False
     
 
