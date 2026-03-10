@@ -44,34 +44,39 @@ def canGuard(my_state:PlayerStatus, rival_state:PlayerStatus):
     RIVAL_ACTION = ActionType(rival_state.PLAYER_ACTION)
     RIVAL_ACTION_PREVIOUS = ActionType(rival_state.PLAYER_ACTION_PREVIOUS)
 
+    distance = getDistance(my_state, rival_state)
+
     # We just got hit, can't do this
     if MY_ACTION == ActionType.GettingHit and my_state.PLAYER_ACTION_FRAME <= 7:
         return False
 
+    if RIVAL_ACTION_PREVIOUS in [ActionType.HighSpDodge, ActionType.HighSpCounterAttack]:
+        return True
+    
     # Normal situations
     if MY_ACTION in [ActionType.Guarding, ActionType.SuccessfulGuard, 
                      ActionType.Nothing, ActionType.Moving, ActionType.Charging, 
-                     ActionType.HighSpCombatEscape, ActionType.GettingHit] and RIVAL_ACTION in [ActionType.UsingSkill, 
-                                                                         ActionType.Attacking]:
+                     ActionType.HighSpCombatEscape, ActionType.GettingHit]: #  and RIVAL_ACTION in [ActionType.UsingSkill, ActionType.Attacking]
         return True
 
     # Parry those
     if RIVAL_ACTION in [ActionType.JumpHeavyAttack, ActionType.JumpHeavyAttackCharged, 
-                        ActionType.JumpLightAttack, ActionType.JumpLightAttackCharged]:
+                        ActionType.JumpLightAttack, ActionType.JumpLightAttackCharged,
+                        ActionType.ChargedAttack] and distance < 10:
         return True
     
     # Vanish
     if my_state.stamina_percent >= 0.1:
         if MY_ACTION in [ActionType.GettingHit, ActionType.HighSpCombatEscape, 
                      ActionType.HighSpCounterAttack, ActionType.HighSpDodge, 
-                     ActionType.Thrown] or RIVAL_ACTION in [ActionType.HighSpCounterAttack, ActionType.HighSpDodge]:
+                     ActionType.Thrown, ActionType.StandingUp] or RIVAL_ACTION in [ActionType.HighSpCounterAttack, ActionType.HighSpDodge]:
             return True
     
     # Cancel incoming
-    if MY_ACTION in [ActionType.Incoming, ActionType.Follow] and getDistance(my_state, rival_state) < 30:
+    if MY_ACTION in [ActionType.Incoming, ActionType.Follow] and distance < 30:
         return True
     
-    if MY_ACTION in [ActionType.SwappedCharacter]:
+    if MY_ACTION in [ActionType.SwappedCharacter] or RIVAL_ACTION in [ActionType.SwappedCharacter]:
         return True
 
     return False
@@ -95,18 +100,28 @@ def canAttack(my_state:PlayerStatus, rival_state:PlayerStatus):
     RIVAL_ACTION_PREVIOUS = ActionType(rival_state.PLAYER_ACTION_PREVIOUS)
 
     dist = getDistance(my_state, rival_state)
-    frame = my_state.PLAYER_ACTION_FRAME
+    my_frame = my_state.PLAYER_ACTION_FRAME
+    rival_frame = my_state.PLAYER_ACTION_FRAME
+
+    # Too late to attack, enemy can parry
+    if RIVAL_ACTION in [ActionType.Attacking, ActionType.ChargedAttack] and rival_frame >= 60:
+        return False
+
+    # If I'm attacking (spamming it) and enemy just dodged (both on ground), then stop attacking
+    if MY_ACTION == ActionType.Attacking and my_frame >= 40:
+        if RIVAL_ACTION == ActionType.HighSpDodge or RIVAL_ACTION_PREVIOUS == ActionType.HighSpDodge:
+            return False 
 
     # Counter values
     if MY_ACTION_PREVIOUS in [ActionType.Incoming, ActionType.Thrown,
                               ActionType.GettingHit, ActionType.Nothing, 
                               ActionType.Jumping, ActionType.GuardDodge, 
                               ActionType.ChargedAttack, ActionType.Attacking]: # UsingSkill detected, maybe bug
-        if dist >= 0.6 and dist < 7 and frame >= 8 and frame < 172:
+        if dist >= 0.6 and dist < 7 and my_frame >= 8 and my_frame < 172:
             return True
     
     # No spam
-    if dist > 10.5 or frame <= 10:
+    if dist > 10.5 or my_frame <= 10:
         return False
     
     # Generic actions
@@ -171,9 +186,14 @@ def canGrab(my_state:PlayerStatus, rival_state:PlayerStatus):
     frame = rival_state.PLAYER_ACTION_FRAME
 
     
-    if getDistance(my_state, rival_state) >= 3.5: #4.01 3.5 is safer
+    if getDistance(my_state, rival_state) >= 3.5 or frame >= 60: #4.01 3.5 is safer
         return False
 
+    # Those can't be grabbed
+    if RIVAL_ACTION in [ActionType.JumpHeavyAttack, ActionType.JumpHeavyAttackCharged, 
+                        ActionType.JumpLightAttack, ActionType.JumpLightAttackCharged]:
+        return False
+    
     # Ensure I can grab
     if MY_ACTION not in [ActionType.Nothing, ActionType.Moving, ActionType.Incoming]:
         return False
@@ -218,7 +238,8 @@ def canUseSKills(my_state:PlayerStatus, rival_state:PlayerStatus):
         return False
     
     # Check if enemy can guard
-    if RIVAL_ACTION in [ActionType.Nothing, ActionType.Guarding, ActionType.Moving, ActionType.Follow, ActionType.Incoming, ActionType.SuccessfulGuard, ActionType.HighSpCombatEscape]:
+    if RIVAL_ACTION in [ActionType.Nothing, ActionType.Guarding, ActionType.Moving, 
+                        ActionType.Follow, ActionType.Incoming, ActionType.SuccessfulGuard, ActionType.HighSpCombatEscape]:
         return False
     
     # Other states where the enemy can't be hit
@@ -361,10 +382,18 @@ def canFollow(my_state:PlayerStatus, rival_state:PlayerStatus):
     #if not canEscape(my_state, rival_state) :
     #    return False
     
+    distance = getDistance(my_state, rival_state)
+
     # Disallow in some situations
-    if RIVAL_ACTION in [ActionType.UsingSkill, ActionType.Awakening, ActionType.Attacking, ActionType.Nothing]:
+    if RIVAL_ACTION in [ActionType.UsingSkill, ActionType.Awakening, ActionType.Attacking,
+                        ActionType.Nothing, ActionType.Guarding, ActionType.SuccessfulGuard, ActionType.GuardDodge]:
         return False
 
+    # Should not do it
+    if RIVAL_ACTION in [ActionType.JumpHeavyAttack, ActionType.JumpHeavyAttackCharged, 
+                        ActionType.JumpLightAttack, ActionType.JumpLightAttackCharged] and distance < 15:
+        return False
+    
     # Escape counter
     if RIVAL_ACTION == ActionType.HighSpCombatEscape and RIVAL_ACTION_PREVIOUS == ActionType.GettingHit and rival_state.PLAYER_ACTION_FRAME <= 20:
         return True
@@ -391,12 +420,14 @@ def canCharge(my_state:PlayerStatus, rival_state:PlayerStatus):
     RIVAL_ACTION_PREVIOUS = ActionType(rival_state.PLAYER_ACTION_PREVIOUS)
 
     # Generally charging is better done at further distances, also don't spend time charging
-    if getDistance(my_state, rival_state) < 10 or my_state.charge >= 4000:
+    if getDistance(my_state, rival_state) < 15 or my_state.charge >= 4000:
         return False
     
 
     # Rival is doing or about to behave aggressively
-    if RIVAL_ACTION in [ActionType.UsingSkill, ActionType.Incoming, ActionType.SwappedCharacter]:
+    if RIVAL_ACTION in [ActionType.UsingSkill, ActionType.Incoming, 
+                        ActionType.SwappedCharacter, ActionType.StandingUp,
+                        ActionType.VulnerableFramePerfect, ActionType.VulnerableSecondFrame]:
         return False
 
 
