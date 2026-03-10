@@ -462,6 +462,10 @@ def canSwap(my_state:PlayerStatus, rival_state:PlayerStatus):
     if my_state.PLAYER_ACTION_FRAME == 0 or rival_state.PLAYER_ACTION_FRAME == 0:
         return False
     
+    # Useless moment to swap
+    if RIVAL_ACTION in [ActionType.Charging]:
+        return False
+    
     if MY_ACTION == ActionType.GettingHit:
         return False
     
@@ -470,3 +474,18 @@ def canSwap(my_state:PlayerStatus, rival_state:PlayerStatus):
     
     return False
 
+
+# TODO: Eg when enemy attacks at close range, don't move? 
+# has to be added to the mask
+def canMove(my_state:PlayerStatus, rival_state:PlayerStatus):
+    MY_ACTION = ActionType(my_state.PLAYER_ACTION)
+    MY_ACTION_PREVIOUS = ActionType(my_state.PLAYER_ACTION_PREVIOUS)
+    RIVAL_ACTION = ActionType(rival_state.PLAYER_ACTION)
+    RIVAL_ACTION_PREVIOUS = ActionType(rival_state.PLAYER_ACTION_PREVIOUS)
+
+    dist = getDistance(my_state, rival_state)
+        
+    if MY_ACTION == ActionType.Nothing and RIVAL_ACTION in [ActionType.Attacking, ActionType.UsingSkill] and dist < 15:
+        return False
+    
+    return True
