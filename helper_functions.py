@@ -484,8 +484,11 @@ def canMove(my_state:PlayerStatus, rival_state:PlayerStatus):
     RIVAL_ACTION_PREVIOUS = ActionType(rival_state.PLAYER_ACTION_PREVIOUS)
 
     dist = getDistance(my_state, rival_state)
-        
-    if MY_ACTION == ActionType.Nothing and RIVAL_ACTION in [ActionType.Attacking, ActionType.UsingSkill] and dist < 15:
+
+    if MY_ACTION in [ActionType.Nothing, 
+                     ActionType.Moving, 
+                     ActionType.Charging] and RIVAL_ACTION in [ActionType.Attacking, 
+                                                               ActionType.UsingSkill] and dist < 15:
         return False
     
     return True
