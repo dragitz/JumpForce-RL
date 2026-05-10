@@ -5,7 +5,6 @@ import numpy as np
 
 
 
-
 pm = pymem.Pymem("JUMP_FORCE-Win64-Shipping.exe")
 
 module = pymem.process.module_from_name(
@@ -105,9 +104,6 @@ class PlayerStatus:
         self.vpad            = pm.read_short(VPAD_PTR + 0x8)
         self.vpad_left_right = pm.read_float(VPAD_PTR + 0x28)
         self.vpad_up_down    = pm.read_float(VPAD_PTR + 0x2C)
-
-        #print(hex(VPAD_PTR))
-
         
 
 

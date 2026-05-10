@@ -10,7 +10,7 @@ while True:
 
     time.sleep(0.05)
 
-    InGame, Flows, StartAllowed, StartAllowed2, Paused, Paused2, isBattleComplete, PauseTriggered, CombatTimer = PlayerStatus.getGameStatus()
+    InGame, Flows, StartAllowed, StartAllowed2, Paused, Paused2, isBattleComplete, PauseTriggered, CombatTimer, WhoAmI = PlayerStatus.getGameStatus()
     #print(getGameStatus())
 
     # Simple system check to know if the game is ready to start (aka agent can fight)

@@ -7,6 +7,15 @@ def getDistance(my_state:PlayerStatus, rival_state:PlayerStatus):
     x2, y2, z2 = rival_state.x, rival_state.y, rival_state.z
     return math.sqrt((x2 - x1)**2 + (y2 - y1)**2 + (z2 - z1)**2)
 
+def isInCinematic(my_state:PlayerStatus, rival_state:PlayerStatus):
+    if my_state.hp_percent == 0.0 or rival_state.hp_percent == 0.0:
+        return False
+    
+    if my_state.PLAYER_ACTION_FRAME <= 6 or rival_state.PLAYER_ACTION_FRAME <= 6:
+        return True
+    
+    return False
+
 def getArenaDistance(my_state:PlayerStatus):
     
     sides = []
@@ -27,6 +36,24 @@ def getArenaDistance(my_state:PlayerStatus):
 
     return sides
 
+def getEma(newValue, oldValue, alpha=0.02):
+    return (alpha * newValue + ( 1 - alpha ) * oldValue)
+
+
+def getCharacterSkills(characterId):
+    if characterId == 1060: return [390, 392, 391]
+
+    # goku      170, 171, 172, 173
+    # goku v2   136, 171, 172, 173
+
+
+# for vpad intent
+def getBits(number):
+    bits = [(number >> i) & 1 for i in range(15, -1, -1)]
+    return bits    
+
+# ------------------------------------------------------------------------
+
 
 
 def canGuardBreak(my_state:PlayerStatus, rival_state:PlayerStatus):
@@ -38,11 +65,15 @@ def canGuardBreak(my_state:PlayerStatus, rival_state:PlayerStatus):
 
     return False
 
+
+
 def canGuard(my_state:PlayerStatus, rival_state:PlayerStatus):
     MY_ACTION = ActionType(my_state.PLAYER_ACTION)
     MY_ACTION_PREVIOUS = ActionType(my_state.PLAYER_ACTION_PREVIOUS)
     RIVAL_ACTION = ActionType(rival_state.PLAYER_ACTION)
     RIVAL_ACTION_PREVIOUS = ActionType(rival_state.PLAYER_ACTION_PREVIOUS)
+
+    MY_FRAME = my_state.PLAYER_ACTION_FRAME
 
     distance = getDistance(my_state, rival_state)
 
@@ -73,13 +104,14 @@ def canGuard(my_state:PlayerStatus, rival_state:PlayerStatus):
             return True
     
     # Cancel incoming
-    if MY_ACTION in [ActionType.Incoming, ActionType.Follow] and distance < 30:
+    if MY_ACTION in [ActionType.Incoming, ActionType.Follow] and distance < 30 and MY_FRAME >= 39:
         return True
     
     if MY_ACTION in [ActionType.SwappedCharacter] or RIVAL_ACTION in [ActionType.SwappedCharacter]:
         return True
 
     return False
+
 
 
 def canAwaken(my_state:PlayerStatus, rival_state:PlayerStatus):
@@ -92,6 +124,7 @@ def canAwaken(my_state:PlayerStatus, rival_state:PlayerStatus):
             return True
     
     return False
+
 
 def canAttack(my_state:PlayerStatus, rival_state:PlayerStatus):
     MY_ACTION = ActionType(my_state.PLAYER_ACTION)
@@ -140,6 +173,7 @@ def canAttack(my_state:PlayerStatus, rival_state:PlayerStatus):
     
     return False
 
+
 def canChargeTp(my_state:PlayerStatus, rival_state:PlayerStatus):
 
     MY_ACTION = ActionType(my_state.PLAYER_ACTION)
@@ -154,6 +188,8 @@ def canChargeTp(my_state:PlayerStatus, rival_state:PlayerStatus):
         return True
     
     return False
+
+
 
 def canJumpHeavy(my_state:PlayerStatus, rival_state:PlayerStatus):
     MY_ACTION = ActionType(my_state.PLAYER_ACTION)
@@ -175,6 +211,8 @@ def canJumpHeavy(my_state:PlayerStatus, rival_state:PlayerStatus):
         return False
     
     return True
+
+
 
 def canGrab(my_state:PlayerStatus, rival_state:PlayerStatus):
     
@@ -286,8 +324,6 @@ def canUseUlt(my_state:PlayerStatus, rival_state:PlayerStatus):
     # Some generic states where it is impossible to use it
     if MY_ACTION in [ActionType.GettingHit, ActionType.Awakening, ActionType.BrokenGuard]:
         return False
-
-
 
     
     return True
